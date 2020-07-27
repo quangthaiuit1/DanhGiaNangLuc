@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:h="http://java.sun.com/jsf/html" template="/pages/home.xhtml">
+	<ui:define name="content">
+		<style>
+.pformat td {
+	background: #5fa65f !important;
+	color: white !important;
+	padding: 7px !important;
+}
+
+.ui-accordion .ui-accordion-header.ui-state-active {
+	background: #505eaa;
+	color: white;
+}
+
+.ui-accordion .ui-accordion-header {
+	background: aliceblue;
+}
+</style>
+		<h3
+			style="margin: 0px; text-align: center; font-size: 2em; color: #4b87f2;">Hội
+			đồng đánh giá</h3>
+		<div style="clear: both" />
+		<p:separator />
+		<h:form id="menuformid">
+			<p:panelGrid style="margin-bottom:10px" columns="1">
+				<p:selectOneMenu value="#{hoiDongDanhGiaBean.kyDanhGia}"
+					converter="abstractConverter" effect="fade" var="t"
+					style="width:89%;" filter="true" filterMatchMode="custom"
+					filterFunction="customFilter">
+					<p:ajax process="@this"
+						listener="#{hoiDongDanhGiaBean.ajaxKyDanhGia()}" update="tbdata" />
+					<f:selectItem itemLabel="--Chọn kỳ đánh giá--" />
+					<f:selectItems value="#{hoiDongDanhGiaBean.kyDanhGias}" var="item"
+						itemLabel="#{item.tenkydanhgia}" itemValue="#{item}" />
+					<p:column>
+						<p:outputLabel value="#{t.tenkydanhgia}" />
+					</p:column>
+				</p:selectOneMenu>
+			</p:panelGrid>
+			<style>
+.fmloadding {
+	background: none !important;
+	border: 0px !important;
+	box-shadow: none !important;
+}
+
+.fmloadding .ui-dialog-titlebar {
+	display: none !important;
+}
+</style>
+			<p:dialog widgetVar="wgloadding" styleClass="fmloadding" modal="true"
+				resizable="false">
+				<p:graphicImage name="/gfx/icon-loading.gif"
+					style="width: 60px;height: 60px;" />
+			</p:dialog>
+			<p:dataTable value="#{hoiDongDanhGiaBean.danhGiaNhanViens}"
+				styleClass="tableformat" paginatorPosition="bottom" id="tbdata"
+				sortBy="#{item.phongban}" rowsPerPageTemplate="60,80,100"
+				paginator="true" rows="80" rowKey="#{item.manhanvien}"
+				expandableRowGroups="true" editable="true" rowIndexVar="rowIndex"
+				scrollable="true" widgetVar="datatb" resizableColumns="true"
+				var="item">
+				<p:headerRow>
+					<p:column style="background:#2196f338">
+						<h:outputText value="" />
+					</p:column>
+					<p:column
+						style="background:#2196f338;font-size: 1.3em;text-align:center"
+						width="50">
+						<h:outputText value="" />
+					</p:column>
+					<p:column
+						style="background:#2196f338;font-size: 1.3em;padding: 5px;">
+						<h:outputText value="#{item.phongban}" />
+					</p:column>
+					<p:column style="background:#2196f338">
+						<h:outputText value="" />
+					</p:column>
+					<p:column style="background:#2196f338">
+						<h:outputText value="" />
+					</p:column>
+					<p:column style="background:#2196f338">
+						<h:outputText value="" />
+					</p:column>
+				</p:headerRow>
+				<p:column style="text-align:center" width="30" headerText="STT">
+					<h:outputText value="#{rowIndex+1}" />
+				</p:column>
+				<p:column width="50" style="text-align:center" headerText="Mã NV">
+					<h:outputText value="#{item.manhanvien}" />
+				</p:column>
+				<p:column headerText="Tên nhân viên" style="text-align:left">
+					<h:outputText value="#{item.tennhanvien}" />
+				</p:column>
+				<p:column headerText="NV đánh giá" width="100">
+					<h:outputText value="Chưa đánh giá" rendered="#{!item.danhgianv}" />
+					<h:outputText style="color:gray" value="Đã đánh giá"
+						rendered="#{item.danhgianv}" />
+				</p:column>
+				<p:column headerText="Ql đánh giá" width="100">
+					<h:outputText value="Chưa đánh giá" rendered="#{!item.danhgiaql}" />
+					<h:outputText style="color:gray" value="Đã đánh giá"
+						rendered="#{item.danhgiaql}" />
+				</p:column>
+				<p:column headerText="Hội đồng đánh giá" width="100">
+					<p:commandButton ajax="false" value="Đánh giá" type="submit"
+						rendered="#{!item.danhgiahd}" onclick="this.form.target='_blank'"
+						style="color: red;font-style: italic;background: none; border: 0px;"
+						action="#{hoiDongDanhGiaBean.danhgianhanvien(item)}" />
+					<p:commandButton ajax="false" value="Chi tiết" type="submit"
+						rendered="#{item.danhgiahd}" onclick="this.form.target='_blank'"
+						style="color: gray;font-style: italic;background: none; border: 0px;"
+						action="#{hoiDongDanhGiaBean.danhgianhanvien(item)}" />
+				</p:column>
+				<f:facet name="footer">
+					<div style="clear: both;" />
+				</f:facet>
+			</p:dataTable>
+		</h:form>
+	</ui:define>
+</ui:composition>

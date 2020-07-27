@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:h="http://java.sun.com/jsf/html" template="/pages/home.xhtml">
+
+	<ui:define name="content">
+		<style>
+.sldapan label {
+	width: 90%;
+	margin-right: 0px !important;
+}
+
+.sldapan {
+	width: 100%;
+	margin: 0px;
+}
+
+.sldapan td {
+	padding: 0px;
+	text-align: left;
+}
+
+.lnumber {
+	background: #009688;
+	padding: 5px 10px;
+	color: white;
+	border-radius: 30px;
+	margin-right: 10px;
+}
+
+.lcauhoi {
+	font-size: 1.2em !important;
+	font-weight: bold;
+	color: #009688;
+}
+
+.diemdanhgia {
+	font-size: 1.1em !important;
+	text-decoration: underline !important;
+	color: #0e8bee !important;
+}
+</style>
+		<h:form>
+
+		</h:form>
+		<h:form id="bctonghop">
+			<p:fieldset style="width:95%;    margin: auto; padding:10px 10px;">
+				<h3 style="margin: 0px; font-size: 1.5em; color: #4b87f2;">Báo
+					cáo năng lực theo công ty</h3>
+				<p:separator style="width:20%;margin:5px" />
+				<h:panelGrid columns="6" style="width:100%">
+					<p:selectOneMenu value="#{baoCaoBean.loaiKyDanhGiath}"
+						converter="abstractConverter" effect="fade" var="t"
+						style="width:150px;" filter="true" filterMatchMode="custom"
+						filterFunction="customFilter">
+						<p:ajax listener="#{baoCaoBean.ajaxLoaiKyDanhGiath()}"
+							process="@this" update="kdgth" />
+						<f:selectItems value="#{baoCaoBean.loaiKyDanhGias}" var="item"
+							itemLabel="#{item.ten}" itemValue="#{item}" />
+						<p:column>
+							<h:outputText value="#{t.ten}" />
+						</p:column>
+					</p:selectOneMenu>
+					<p:selectOneMenu value="#{baoCaoBean.kyDanhGiath}"
+						converter="abstractConverter" effect="fade" var="t" id="kdgth"
+						style="width:150px;" filter="true" filterMatchMode="custom"
+						filterFunction="customFilter">
+						<p:ajax process="@this" />
+						<f:selectItems value="#{baoCaoBean.kyDanhGiaths}" var="item"
+							itemLabel="#{item.tenkydanhgia}" itemValue="#{item}" />
+						<p:column>
+							<h:outputText value="#{t.tenkydanhgia}" />
+						</p:column>
+					</p:selectOneMenu>
+					<p:selectOneMenu value="#{baoCaoBean.loaidanhgia}">
+						<p:ajax process="@this" />
+						<f:selectItem itemLabel="Chọn loại đánh giá" itemValue="" />
+						<f:selectItem itemLabel="Năng lực cần đào tạo" itemValue="daotao" />
+						<f:selectItem itemLabel="Năng lực cần tuyên dương"
+							itemValue="tuyenduong" />
+					</p:selectOneMenu>
+					<p:selectOneMenu value="#{baoCaoBean.soluongnangluc}"
+						styleClass="slnumber ">
+						<f:selectItem itemLabel="Chọn số năng lực" itemValue="0" />
+						<f:selectItem itemLabel="1" itemValue="1" />
+						<f:selectItem itemLabel="2" itemValue="2" />
+						<f:selectItem itemLabel="3" itemValue="3" />
+						<f:selectItem itemLabel="4" itemValue="4" />
+						<f:selectItem itemLabel="5" itemValue="5" />
+						<f:selectItem itemLabel="6" itemValue="6" />
+						<f:selectItem itemLabel="7" itemValue="7" />
+						<f:selectItem itemLabel="8" itemValue="8" />
+						<f:selectItem itemLabel="9" itemValue="9" />
+						<f:selectItem itemLabel="10" itemValue="10" />
+						<f:selectItem itemLabel="11" itemValue="11" />
+						<f:selectItem itemLabel="12" itemValue="12" />
+						<f:selectItem itemLabel="13" itemValue="13" />
+						<f:selectItem itemLabel="14" itemValue="14" />
+						<f:selectItem itemLabel="15" itemValue="15" />
+						<f:selectItem itemLabel="16" itemValue="16" />
+						<f:selectItem itemLabel="17" itemValue="17" />
+						<f:selectItem itemLabel="18" itemValue="18" />
+						<f:selectItem itemLabel="19" itemValue="19" />
+						<f:selectItem itemLabel="20" itemValue="20" />
+						<f:selectItem itemLabel="21" itemValue="21" />
+						<f:selectItem itemLabel="22" itemValue="22" />
+						<f:selectItem itemLabel="23" itemValue="23" />
+						<f:selectItem itemLabel="24" itemValue="24" />
+						<f:selectItem itemLabel="25" itemValue="25" />
+						<f:selectItem itemLabel="26" itemValue="26" />
+						<f:selectItem itemLabel="27" itemValue="27" />
+						<f:selectItem itemLabel="28" itemValue="28" />
+						<f:selectItem itemLabel="29" itemValue="29" />
+						<f:selectItem itemLabel="30" itemValue="30" />
+						<p:ajax process="@this" />
+					</p:selectOneMenu>
+					<p:selectOneMenu value="#{baoCaoBean.departments}"
+						converter="abstractConverter" effect="fade" var="t"
+						style="width:150px;" filter="true" filterMatchMode="custom"
+						filterFunction="customFilter">
+						<p:ajax process="@this" />
+						<f:selectItem itemLabel="--Tất cả phòng ban--" itemValue="#{null}" />
+						<f:selectItems value="#{baoCaoBean.departments}" var="item"
+							itemLabel="#{item.name}" itemValue="#{item}" />
+						<p:column>
+							<h:outputText value="#{t.code}" />
+						</p:column>
+						<p:column>
+							<h:outputText value="#{t.showAllNameDepart()}" escape="false" />
+						</p:column>
+					</p:selectOneMenu>
+					<p:commandButton value="Thực hiện" styleClass=":bctonghop"
+						update="tbdata" action="#{baoCaoBean.baocaotonghop()}" />
+				</h:panelGrid>
+				<p:dataTable value="#{baoCaoBean.baoCaoTongHopDTOs}" var="item"
+					id="tbdata" styleClass="tableformat" paginatorPosition="bottom"
+					rowIndexVar="rowIndex" style="background: #c6e0f4;"
+					rowsPerPageTemplate="80,100,120" paginator="true" rows="80"
+					expandableRowGroups="true">
+					<p:column style="text-align:center" width="100" headerText="STT">
+						<h:outputText value="#{rowIndex+1}" />
+					</p:column>
+					<p:column headerText="Mã" width="100">
+						<h:outputText value="#{item.nangLuc.ma}" />
+					</p:column>
+					<p:column headerText="Năng lực">
+						<h:outputText value="#{item.nangLuc.ten}" />
+					</p:column>
+					<p:column headerText="Số lượng" width="200"
+						style="text-align:center">
+						<h:outputText value="#{item.soluong}" />
+					</p:column>
+				</p:dataTable>
+			</p:fieldset>
+		</h:form>
+		<h:form id="bctuychon">
+			<p:fieldset
+				style="width:95%;    margin: auto; padding:10px 10px; margin-top: 20px">
+				<h3 style="margin: 0px; font-size: 1.5em; color: #4b87f2;">Báo
+					cáo năng lực theo tùy chọn</h3>
+				<p:separator style="width:20%;margin:5px" />
+				<h:panelGrid columns="6" style="width:100%">
+					<p:selectOneMenu value="#{baoCaoBean.loaiKyDanhGiatc}"
+						converter="abstractConverter" effect="fade" var="t"
+						style="width:150px;" filter="true" filterMatchMode="custom"
+						filterFunction="customFilter">
+						<p:ajax listener="#{baoCaoBean.ajaxLoaiKyDanhGiatc()}"
+							process="@this" update="kdgtc" />
+						<f:selectItems value="#{baoCaoBean.loaiKyDanhGias}" var="item"
+							itemLabel="#{item.ten}" itemValue="#{item}" />
+						<p:column>
+							<h:outputText value="#{t.ten}" />
+						</p:column>
+					</p:selectOneMenu>
+					<p:selectOneMenu value="#{baoCaoBean.kyDanhGiatc}"
+						converter="abstractConverter" effect="fade" var="t" id="kdgtc"
+						style="width:150px;" filter="true" filterMatchMode="custom"
+						filterFunction="customFilter">
+						<p:ajax process="@this" />
+						<f:selectItems value="#{baoCaoBean.kyDanhGiatcs}" var="item"
+							itemLabel="#{item.tenkydanhgia}" itemValue="#{item}" />
+						<p:column>
+							<h:outputText value="#{t.tenkydanhgia}" />
+						</p:column>
+					</p:selectOneMenu>
+					<p:selectOneMenu value="#{baoCaoBean.departmenttc}"
+						converter="abstractConverter" effect="fade" var="t"
+						style="width:150px;" filter="true" filterMatchMode="custom"
+						filterFunction="customFilter">
+						<p:ajax process="@this" listener="#{baoCaoBean.ajaxDeptc()}"
+							update="nltc" />
+						<f:selectItem itemLabel="--Tất cả phòng ban--" itemValue="#{null}" />
+						<f:selectItems value="#{baoCaoBean.departments}" var="item"
+							itemLabel="#{item.name}" itemValue="#{item}" />
+						<p:column>
+							<h:outputText value="#{t.code}" />
+						</p:column>
+						<p:column>
+							<h:outputText value="#{t.showAllNameDepart()}" escape="false" />
+						</p:column>
+					</p:selectOneMenu>
+					<p:selectOneMenu value="#{baoCaoBean.nangLuc}" id="nltc"
+						converter="abstractConverter" effect="fade" var="t"
+						style="width:150px;" filter="true" filterMatchMode="custom"
+						filterFunction="customFilter">
+						<p:ajax process="@this" />
+						<f:selectItem itemLabel="--Tất cả năng lực--" itemValue="#{null}" />
+						<f:selectItems value="#{baoCaoBean.nangLucs}" var="item"
+							itemLabel="#{item.ten}" itemValue="#{item}" />
+						<p:column>
+							<h:outputText value="#{t.ma}" />
+						</p:column>
+						<p:column>
+							<h:outputText value="#{t.ten}" escape="false" />
+						</p:column>
+					</p:selectOneMenu>
+					<p:selectOneMenu value="#{baoCaoBean.ketqua}" style="width:150px;">
+						<p:ajax process="@this" />
+						<f:selectItem itemLabel="Chọn kết quả" itemValue="" />
+						<f:selectItem itemLabel="Đạt" itemValue="dat" />
+						<f:selectItem itemLabel="Không đạt" itemValue="khongdat" />
+					</p:selectOneMenu>
+					<p:commandButton value="Thực hiện" styleClass=":bctuychon"
+						update="tbdatatc" action="#{baoCaoBean.baocaotuychon()}" />
+				</h:panelGrid>
+				<p:dataTable value="#{baoCaoBean.baoCaoTuyChonDTOs}"
+					styleClass="tableformat" paginatorPosition="bottom" id="tbdatatc"
+					sortBy="#{item.phongban}" rowsPerPageTemplate="60,80,100"
+					paginator="true" rows="80" rowKey="#{item.manv}"
+					expandableRowGroups="true" editable="true" rowIndexVar="rowIndex"
+					scrollable="true" widgetVar="datatb" resizableColumns="true"
+					var="item">
+					<p:headerRow>
+						<p:column style="background:#2196f338">
+							<h:outputText value="" />
+						</p:column>
+						<p:column
+							style="background:#2196f338;font-size: 1.3em;text-align:center"
+							width="50">
+							<h:outputText value="" />
+						</p:column>
+						<p:column
+							style="background:#2196f338;font-size: 1.3em;padding: 5px;">
+							<h:outputText value="#{item.phongban}" />
+						</p:column>
+						<p:column style="background:#2196f338">
+							<h:outputText value="" />
+						</p:column>
+						<p:column style="background:#2196f338">
+							<h:outputText value="" />
+						</p:column>
+						<p:column style="background:#2196f338">
+							<h:outputText value="" />
+						</p:column>
+					</p:headerRow>
+					<p:column style="text-align:center" width="30" headerText="STT">
+						<h:outputText value="#{rowIndex+1}" />
+					</p:column>
+					<p:column width="50" style="text-align:center" headerText="Mã NV">
+						<h:outputText value="#{item.manv}" />
+					</p:column>
+					<p:column headerText="Tên nhân viên" style="text-align:left">
+						<h:outputText value="#{item.tennv}" />
+					</p:column>
+					<p:column headerText="Chức danh">
+						<h:outputText value="#{item.chucdanh}" />
+					</p:column>
+					<p:column headerText="Kết quả" width="100"
+						style="text-align:center">
+						<h:outputText value="#{item.ketqua}%" />
+					</p:column>
+					<p:column headerText="Báo cáo" width="100"
+						style="text-align:center">
+						<p:commandButton ajax="false" value="Chi tiết" type="submit"
+							onclick="this.form.target='_blank'"
+							action="#{baoCaoBean.chitiet(item)}" />
+					</p:column>
+					<p:column headerText="Nhận xét" width="100"
+						style="text-align:center">
+						<h:outputText value="Không đạt" rendered="#{(item.ketqua lt 100)}" />
+						<h:outputText value="Đạt" rendered="#{!(item.ketqua lt 100)}" />
+					</p:column>
+					<f:facet name="footer">
+						<p:commandButton value="Xuất excel" immediate="true"
+							style="float:right"
+							onclick="monitorDownload( showStatus , hideStatus)"
+							actionListener="#{baoCaoBean.baocaotuychonxls()}" />
+						<div style="clear: both;" />
+					</f:facet>
+				</p:dataTable>
+			</p:fieldset>
+		</h:form>
+	</ui:define>
+</ui:composition>

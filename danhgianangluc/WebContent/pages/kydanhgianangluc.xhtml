@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:h="http://java.sun.com/jsf/html" template="/pages/home.xhtml">
+	<ui:define name="content">
+		<style>
+.pformat td {
+	background: #5fa65f !important;
+	color: white !important;
+	padding: 7px !important;
+}
+
+.ui-accordion .ui-accordion-header.ui-state-active {
+	background: #505eaa;
+	color: white;
+}
+
+.ui-accordion .ui-accordion-header {
+	background: aliceblue;
+}
+div.header{
+    background: #5081aa;
+    color: white;
+    padding: 7px;
+    font-size: 1.2em;
+    
+}
+</style>
+		<h3
+			style="margin: 0px; text-align: center; font-size: 2em; color: #4b87f2;">Kỳ
+			đánh giá năng lực</h3>
+		<div style="clear: both" />
+		<p:separator />
+		<h:form id="menuformid">
+				<div class="header"> Bài kiểm tra năng lực của bạn</div>
+					<p:fieldset
+						style="width:60%;    margin: auto; margin-top:20px;text-align:center;background: #f6e0bf;font-size: 1.2em;"
+						rendered="#{baiDanhGiaNangLucBean.kyDanhGias.size()==0}">
+						<p:outputLabel style="font-size:1em"
+							value="Bạn không có bài kiểm tra năng lực nào trong khoảng thời gian này." />
+					</p:fieldset>
+					<ui:repeat var="item" value="#{baiDanhGiaNangLucBean.kyDanhGias}">
+						<p:fieldset
+							style="width:40%;    margin: auto; margin-top:20px;text-align:center;background: aliceblue;font-size: 1.2em;">
+							<p:panelGrid columns="2" style="width:100%;"
+								columnClasses="w30,w70">
+								<p:outputLabel value="Kỳ đánh giá: " />
+								<p:outputLabel value="#{item.tenkydanhgia}"
+									styleClass="fmdanhgia" />
+								<p:outputLabel value="Ngày bắt đầu " />
+								<p:outputLabel value="#{item.ngaybatdau}" styleClass="fmdanhgia">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</p:outputLabel>
+								<p:outputLabel value="Ngày kết thúc: " />
+								<p:outputLabel value="#{item.ngayketthuc}"
+									styleClass="fmdanhgia">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</p:outputLabel>
+							</p:panelGrid>
+							<p:panelGrid columns="1" style="width:100%;text-align:center"
+								rendered="#{!item.dadanhgia}">
+								<p:commandButton value="Bắt đầu đánh giá"
+									styleClass="btsmallcam" style="background: #FF9800 !important;"
+									action="#{baiDanhGiaNangLucBean.chitietkydanhgia(item)}" />
+							</p:panelGrid>
+							<p:panelGrid columns="1" styleClass="pformat"
+								rendered="#{item.dadanhgia}"
+								style="width:100%;text-align:center;">
+								<p:outputLabel value="Bạn đã đánh giá"
+									style="font-size: 1.0em;font-weight: bold;" />
+							</p:panelGrid>
+						</p:fieldset>
+					</ui:repeat>
+							<style>
+							.fmloadding {
+								background: none !important;
+								border: 0px !important;
+								box-shadow: none !important;
+							}
+							
+							.fmloadding .ui-dialog-titlebar {
+								display: none !important;
+							}
+							</style>
+					<p:dialog widgetVar="wgloadding" styleClass="fmloadding" modal="true"
+			resizable="false">
+			<p:graphicImage name="/gfx/icon-loading.gif"
+				style="width: 60px;height: 60px;" />
+		</p:dialog>
+				<div class="header"> Đánh giá năng lực nhân viên</div>
+					<p:dataTable value="#{baiDanhGiaNangLucBean.danhGiaNhanViens}"
+						styleClass="tableformat" paginatorPosition="bottom" style="margin:10px"
+						sortBy="#{item.tennhanvien}" rowsPerPageTemplate="60,80,100"
+						paginator="true" rows="80" rowKey="#{item.manhanvien}"
+						expandableRowGroups="true" editable="true" rowIndexVar="rowIndex"
+						scrollable="true" widgetVar="datatb" resizableColumns="true"
+						var="item">
+						<p:column style="text-align:center" width="30" headerText="STT">
+							<h:outputText value="#{rowIndex+1}" />
+						</p:column>
+						<p:column width="50" style="text-align:center" headerText="Mã NV">
+							<h:outputText value="#{item.manhanvien}" />
+						</p:column>
+						<p:column headerText="Tên nhân viên" style="text-align:left">
+							<h:outputText value="#{item.tennhanvien}" />
+						</p:column>
+						<p:column headerText="Kỳ đánh giá" style="text-align:left">
+							<h:outputText value="#{item.kyDanhGia.tenkydanhgia}" />
+						</p:column>
+						<p:column headerText="NV đánh giá" width="100">
+							<h:outputText value="Đã đánh giá" rendered="#{item.danhgianv}" style="color:gray"/>
+							<h:outputText value="Chưa đánh giá"
+								rendered="#{!item.danhgianv}" />
+						</p:column>
+						<p:column headerText="QL đánh giá" width="100">
+							<h:outputText value="Đã đánh giá" rendered="#{item.danhgiaql}" style="color:gray"/>
+							<h:outputText value="Chưa đánh giá"
+								rendered="#{!item.danhgiaql}" />
+						</p:column>
+						<p:column headerText="..." width="100">
+							<p:commandLink update="@form" value="Đánh giá"
+								rendered="#{!item.danhgiahd}"
+								action="#{baiDanhGiaNangLucBean.danhgianhanvien(item)}"   onclick="PF('wgloadding').show()"
+								style="color: red;font-style: italic;text-decoration: underline;" />
+								<p:commandLink update="@form" value="Chi tiết"
+								rendered="#{item.danhgiahd}" onclick="PF('wgloadding').show()"
+								action="#{baiDanhGiaNangLucBean.danhgianhanvien(item)}"
+								style="color: #3F51B5;;font-style: italic;text-decoration: underline;" />
+						</p:column>
+						<p:column headerText="HĐ đánh giá" width="100">
+							<h:outputText value="Đã đánh giá" rendered="#{item.danhgiahd}" style="color:gray"/>
+							<h:outputText value="Chưa đánh giá"
+								rendered="#{!item.danhgiahd}" />
+						</p:column>
+						<f:facet name="footer">
+							<div style="clear: both;" />
+						</f:facet>
+					</p:dataTable>
+		</h:form>
+		
+	</ui:define>
+</ui:composition>

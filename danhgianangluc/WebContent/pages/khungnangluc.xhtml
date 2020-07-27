@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:h="http://java.sun.com/jsf/html" template="/pages/home.xhtml">
+	<ui:define name="content">
+		<h3 style="margin: 0px">Khung năng lực</h3>
+		<p:separator />
+		<h:form id="menuformid">
+			<p:selectOneMenu value="#{khungNangLucBean.department}"
+				converter="abstractConverter" effect="fade" var="t"
+				style="width:150px;" id="iddeps" filter="true"
+				filterMatchMode="custom" filterFunction="customFilter">
+				<p:ajax listener="#{khungNangLucBean.ajaxDep()}" process="@this"
+					update=":menuformid" />
+				<f:selectItem itemLabel="--PHÒNG BAN--" itemValue="#{null}" />
+				<f:selectItems value="#{khungNangLucBean.departments}" var="item"
+					itemLabel="#{item.name}" itemValue="#{item}" />
+				<p:column>
+					<h:outputText value="#{t.code}" />
+				</p:column>
+				<p:column>
+					<h:outputText value="#{t.showAllNameDepart()}" escape="false" />
+				</p:column>
+			</p:selectOneMenu>
+			<p:selectOneMenu value="#{khungNangLucBean.positionJobDTO}"
+				converter="abstractConverter" effect="fade" var="t"
+				style="width:150px;" filter="true" filterMatchMode="custom"
+				filterFunction="customFilter">
+				<p:ajax listener="#{khungNangLucBean.ajaxPos()}" process="@this"
+					update=":menuformid" />
+				<f:selectItem itemLabel="--CHỨC DANH--" itemValue="#{null}" />
+				<f:selectItems value="#{khungNangLucBean.positionJobDTOs}"
+					var="item" itemLabel="#{item.name}" itemValue="#{item}" />
+				<p:column>
+					<h:outputText value="#{t.code}" />
+				</p:column>
+				<p:column>
+					<h:outputText value="#{t.name}" escape="false" />
+				</p:column>
+			</p:selectOneMenu>
+			<p:commandButton value="Lưu/Cập nhật khung năng lực"
+				action="#{khungNangLucBean.saveAndUpdate()}" update=":messages"
+				disabled="#{khungNangLucBean.positionJobDTO==null}"
+				styleClass="btsave" style="float:right" />
+			<div style="clear: both" />
+			<p:dataTable value="#{khungNangLucBean.khungNangLucs}"
+				styleClass="tableformat" paginatorPosition="bottom"
+				rowsPerPageTemplate="60,80,100" paginator="true" rows="80"
+				rowKey="#{item.id}" expandableRowGroups="true" editable="true"
+				sortBy="#{item.nangLuc.nhomNangLuc.ma}" rowIndexVar="rowIndex"
+				scrollable="true" widgetVar="datatb" resizableColumns="true"
+				var="item">
+				<p:headerRow>
+					<p:column style="background:#2196f338">
+						<h:outputText value="" />
+					</p:column>
+					<p:column
+						style="background:#2196f338;font-size: 1.3em;text-align:center"
+						width="50">
+						<h:outputText value="#{item.nangLuc.nhomNangLuc.ma}" />
+					</p:column>
+					<p:column
+						style="background:#2196f338;font-size: 1.3em;padding: 5px;">
+						<h:outputText value="#{item.nangLuc.nhomNangLuc.ten}" />
+					</p:column>
+					<p:column
+						style="background:#2196f338;font-size: 1.3em;padding: 5px;text-align:center">
+						<p:inputNumber value="#{item.trongsonhom}" minValue="0"
+							styleClass="ipnumber30" maxValue="100" symbol="%"
+							symbolPosition="e" />
+					</p:column>
+					<p:column style="background:#2196f338;">
+					</p:column>
+					<p:column style="background:#2196f338;">
+					</p:column>
+					<p:column style="background:#2196f338;">
+					</p:column>
+				</p:headerRow>
+				<p:column style="text-align:center" width="30" headerText="STT">
+					<h:outputText value="#{rowIndex+1}" />
+				</p:column>
+				<p:column width="50" style="text-align:center" headerText="Mã">
+					<h:outputText value="#{item.nangLuc.ma}" />
+				</p:column>
+				<p:column headerText="Năng lực">
+					<h:outputText value="#{item.nangLuc.ten}" />
+				</p:column>
+				<p:column headerText="Trọng số" width="100">
+					<h:outputText value="" />
+				</p:column>
+				<p:column style="text-align:center" headerText="Mức độ quan trọng"
+					width="120">
+					<p:selectOneMenu value="#{item.mucdoquantrong}" styleClass="slnumber "
+							style="width:30px">
+							<f:selectItem itemLabel="1" itemValue="1" />
+							<f:selectItem itemLabel="2" itemValue="2" />
+							<f:selectItem itemLabel="3" itemValue="3" />
+							<p:ajax process="@this" update=":menuformid"/>
+						</p:selectOneMenu>
+				</p:column>
+				<p:column style="text-align:center" headerText="Tiêu chuẩn"
+					width="120">
+					<p:selectOneMenu value="#{item.tieuchuan}" styleClass="slnumber "
+							style="width:30px">
+							<f:selectItem itemLabel="1" itemValue="1" />
+							<f:selectItem itemLabel="2" itemValue="2" />
+							<f:selectItem itemLabel="3" itemValue="3" />
+							<f:selectItem itemLabel="4" itemValue="4" />
+							<f:selectItem itemLabel="5" itemValue="5" />
+							<p:ajax process="@this" update=":menuformid"/>
+						</p:selectOneMenu>
+				</p:column>
+				<p:column style="text-align:center" headerText="Điểm chuẩn"
+					width="120">
+					<h:outputText value="#{item.mucdoquantrong*item.tieuchuan}" />
+				</p:column>
+				<f:facet name="footer">
+					<div style="clear: both;" />
+				</f:facet>
+			</p:dataTable>
+		</h:form>
+	</ui:define>
+</ui:composition>

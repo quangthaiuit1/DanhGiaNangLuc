@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:h="http://java.sun.com/jsf/html" template="/pages/home.xhtml">
+
+	<ui:define name="content">
+		<style>
+.sldapan label {
+	width: 90%;
+	padding:10px 0px;
+}
+
+.sldapan {
+	width: 100%;
+	margin: 10px 20px;
+}
+
+.lnumber {
+	background: #009688;
+	padding: 5px 10px;
+	color: white;
+	border-radius: 30px;
+	margin-right: 10px;
+}
+
+.lcauhoi {
+	font-size: 1.2em !important;
+	font-weight: bold;
+	color: #009688;
+}
+</style>
+		<h3
+			style="margin: 0px; text-align: center; font-size: 2em; color: #4b87f2;">Bảng
+			câu hỏi đánh giá năng lực</h3>
+		<h3
+			style="margin: 0px; text-align: center; font-size: 1.5em; color: #4b87f2;">#{ketQuaDanhGiaBean.kyDanhGia.tenkydanhgia}</h3>
+			<h4
+			style="margin: 0px; text-align: center; font-size: 1.2em; color: #f24b6b;">#{ketQuaDanhGiaBean.tenchucdanh}</h4>
+		<div style="clear: both" />
+		<p:separator style="    width: 20%;margin-bottom:50px" />
+		<h:form id="menuformid">
+			<p:fieldset style="width:50%;    margin: auto; padding:20px 10px;">
+				<ui:repeat var="item" value="#{ketQuaDanhGiaBean.ketQuaDanhGias}"
+					varStatus="idx">
+					<p:outputLabel value="#{idx.index+1}" styleClass="lnumber" />
+					<p:outputLabel value="#{item.tennl}" styleClass="lcauhoi" />
+					<p:selectOneRadio layout="grid" columns="1" styleClass="sldapan"
+						converter="abstractConverter" value="#{item.chiTietNangLuc}">
+						<f:selectItems value="#{item.chiTietNangLucs}" var="sub"
+							itemLabel="#{sub.noidung}" itemValue="#{sub}" />
+						<p:ajax process="@this" />
+					</p:selectOneRadio>
+				</ui:repeat>
+				<p:separator style="width: 50%;margin-top:20px" />
+				<h:panelGrid columns="1" style="text-align:center;width:100%">
+					<p:commandButton value="Lưu bảng đánh giá" styleClass="btsave"
+						action="#{ketQuaDanhGiaBean.luuketqua()}" ajax="false"
+						style="background: #F44336  !important" />
+				</h:panelGrid>
+			</p:fieldset>
+		</h:form>
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:h="http://java.sun.com/jsf/html" template="/pages/home.xhtml">
+
+	<ui:define name="content">
+		<style>
+.sldapan label {
+	width: 90%;
+	margin-right: 0px !important;
+}
+
+.sldapan {
+	width: 100%;
+	margin: 0px;
+	max-height: 500px;
+	overflow: auto;
+}
+
+.sldapan td {
+	padding: 0px;
+	text-align: left;
+}
+
+.lnumber {
+	background: #009688;
+	padding: 5px 10px;
+	color: white;
+	border-radius: 30px;
+	margin-right: 10px;
+}
+
+.lcauhoi {
+	font-size: 1.2em !important;
+	font-weight: bold;
+	color: #009688;
+}
+
+
+
+
+.overplformat .ui-overlaypanel-content {
+	max-height: 500px;
+	overflow: auto;
+}
+
+.overplformat .ui-selectoneradio label {
+	vertical-align: text-top;
+}
+</style>
+		<h3
+			style="margin: 0px; text-align: center; font-size: 2.0em; color: #4b87f2;">#{danhGiaNhanVienBean.kyDanhGia.tenkydanhgia}</h3>
+		<h3
+			style="margin: 0px; text-align: center; font-size: 1.5em; color: #4b87f2;">#{danhGiaNhanVienBean.nhanvien.name}</h3>
+			<h4
+			style="margin: 0px; text-align: center; font-size: 1.2em; color: #f24b6b;">#{danhGiaNhanVienBean.tenchucdanh}</h4>
+		<div style="clear: both" />
+		<p:separator style="    width: 20%;" />
+		<p:commandButton value="Lưu bảng đánh giá" styleClass="btsave"
+			style="float:right" action="#{danhGiaNhanVienBean.luuketqua()}"
+			update=":menuformid" />
+		<p:commandButton value="Lưu tạm"
+			action="#{danhGiaNhanVienBean.luutam()}" update=":menuformid"
+			styleClass="btnew" style="float:right" />
+		<div style="clear: both" />
+		<h:form id="menuformid">
+			<p:fieldset style="width:100%;    margin: auto; padding:10px 10px;">
+				<p:dataTable value="#{danhGiaNhanVienBean.chiTietDanhGiaNhanViens}"
+					styleClass="tableformat" paginatorPosition="bottom"
+					rowsPerPageTemplate="60,80,100" paginator="true" rows="80"
+					rowKey="#{item.nangLuc.id}" expandableRowGroups="true"
+					editable="true" sortBy="#{item.nhomNangLucDanhGia.manhom}"
+					rowIndexVar="rowIndex" scrollable="true" widgetVar="datatb"
+					resizableColumns="true" var="item">
+					<p:headerRow>
+						<p:column style="background:#2196f338">
+							<h:outputText value="" />
+						</p:column>
+						<p:column
+							style="background:#2196f338;font-size: 1.3em;text-align:center"
+							width="50">
+							<h:outputText value="#{item.nhomNangLucDanhGia.manhom}" />
+						</p:column>
+						<p:column
+							style="background:#2196f338;font-size: 1.3em;padding: 5px;">
+							<h:outputText value="#{item.nhomNangLucDanhGia.tennhom}" />
+						</p:column>
+						<p:column
+							style="background:#2196f338;font-size: 1.3em;padding: 5px;text-align:center">
+							<h:outputText value="#{item.trongso/100}">
+								<f:convertNumber pattern="##%" />
+							</h:outputText>
+						</p:column>
+						<p:column style="background:#2196f338;">
+						</p:column>
+						<p:column style="background:#2196f338;">
+						</p:column>
+						<p:column style="background:#2196f338;text-align:center">
+							<h:outputText value="#{item.nhomNangLucDanhGia.diemchuan}" />
+						</p:column>
+						<p:column style="background:#2196f338;">
+						</p:column>
+						<p:column style="background:#2196f338;text-align:center">
+							<!-- 							<h:outputText value="#{item.nhomNangLucDanhGia.quanlydanhgia}" /> -->
+							<h:outputText value="" />
+						</p:column>
+						<p:column style="background:#2196f338;">
+						</p:column>
+						<p:column style="background:#2196f338;text-align:center">
+							<h:outputText value="#{item.nhomNangLucDanhGia.diemdat}" />
+						</p:column>
+						<p:column style="background:#2196f338;text-align:center">
+							<h:outputText value="#{item.nhomNangLucDanhGia.ketqua}%" />
+						</p:column>
+					</p:headerRow>
+					<p:column style="text-align:center" width="30" headerText="STT">
+						<h:outputText value="#{rowIndex+1}" />
+					</p:column>
+					<p:column width="50" style="text-align:center" headerText="Mã">
+						<h:outputText value="#{item.nangLuc.ma}" />
+					</p:column>
+					<p:column headerText="Năng lực">
+						<h:outputText value="#{item.nangLuc.ten}" />
+					</p:column>
+					<p:column headerText="Trọng số" width="100">
+						<h:outputText value="" />
+					</p:column>
+					<p:column style="text-align:center" headerText="Mức độ" width="50">
+						<h:outputText value="#{item.mucdo}" />
+					</p:column>
+					<p:column style="text-align:center" headerText="Tiêu chuẩn"
+						width="50">
+						<h:outputText value="#{item.tieuchuan}" />
+					</p:column>
+					<p:column style="text-align:center" headerText="Điểm chuẩn"
+						width="50">
+						<h:outputText value="#{item.mucdo*item.tieuchuan}" />
+					</p:column>
+					<p:column style="text-align:center" headerText="Tự đánh giá"
+						width="50">
+						<h:outputText value="#{item.tudanhgia}" />
+					</p:column>
+					<p:column style="text-align:center" headerText="QL đánh giá"
+						width="50">
+						<p:commandLink value="#{item.danhgiaql}" id="qldg"
+							action="#{danhGiaNhanVienBean.caidat(item)}"
+							onclick="PF('op#{rowIndex}').show();"
+							disabled="#{item.danhgiahd!=0}" styleClass="diemdanhgia" />
+						<p:overlayPanel for="qldg" showEffect="blind" appendToBody="true"
+							styleClass="overplformat" style="width:400px;"
+							widgetVar="op#{rowIndex}" dismissable="true"
+							showCloseIcon="false">
+							<p:selectOneRadio layout="grid" columns="1" styleClass="sldapan"
+								id="abc" converter="abstractConverter"
+								value="#{item.chiTietNangLucql}">
+								<f:selectItems value="#{item.chiTietNangLucs}" var="sub"
+									itemLabel="#{sub.capdo} - #{sub.noidung}" itemValue="#{sub}" />
+								<p:ajax process="@this" update="qldg"
+									oncomplete="PF('op#{rowIndex}').hide();"
+									listener="#{danhGiaNhanVienBean.setdanhgia(item.nangLuc.ma)}" />
+							</p:selectOneRadio>
+						</p:overlayPanel>
+					</p:column>
+					<p:column style="text-align:center" headerText="HĐ đánh giá"
+						width="50">
+						<h:outputText value="#{item.danhgiahd}" />
+					</p:column>
+					<p:column style="text-align:center" headerText="Điểm đạt"
+						width="50">
+						<h:outputText value="#{item.diemdat}" />
+					</p:column>
+					<p:column style="text-align:center" headerText="Kết quả" width="50">
+						<h:outputText value="#{item.ketqua}%" />
+					</p:column>
+					<p:columnGroup type="footer">
+						<p:row>
+							<p:column footerText="" />
+							<p:column footerText="" />
+							<p:column footerText="Tổng cộng" />
+							<p:column footerText="100%" />
+							<p:column footerText="" />
+							<p:column footerText="" />
+							<p:column footerText="" />
+							<p:column footerText="#{danhGiaNhanVienBean.tongdiemnv}%" />
+							<p:column footerText="#{danhGiaNhanVienBean.tongdiemql}%" />
+							<p:column footerText="" />
+							<p:column footerText="" />
+							<p:column footerText="#{danhGiaNhanVienBean.tongdiem}%" />
+						</p:row>
+					</p:columnGroup>
+					<f:facet name="footer">
+						<div style="clear: both;" />
+					</f:facet>
+				</p:dataTable>
+			</p:fieldset>
+		</h:form>
+	</ui:define>
+</ui:composition>
