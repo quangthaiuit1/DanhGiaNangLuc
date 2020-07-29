@@ -17,6 +17,7 @@ import org.omnifaces.cdi.ViewScoped;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import trong.lixco.com.account.servicepublics.Department;
 import trong.lixco.com.classInfor.NhanVienKyDanhGia;
 import trong.lixco.com.ejb.service.ChiTietKyDanhGiaService;
 import trong.lixco.com.ejb.service.ChiTietNangLucService;
@@ -30,6 +31,11 @@ import trong.lixco.com.jpa.entity.KyDanhGia;
 import trong.lixco.com.servicepublic.EmpPJobDTO;
 import trong.lixco.com.servicepublic.EmpPJobServicePublic;
 import trong.lixco.com.servicepublic.EmpPJobServicePublicProxy;
+import trong.lixco.com.servicepublic.EmployeeDTO;
+import trong.lixco.com.servicepublic.EmployeeServicePublic;
+import trong.lixco.com.servicepublic.EmployeeServicePublicProxy;
+import trong.lixco.com.thai.mail.CONFIG_MAIL;
+import trong.lixco.com.thai.mail.Mail;
 import trong.lixco.com.util.Notify;
 
 @Named
@@ -66,6 +72,7 @@ public class KetQuaDanhGiaBean extends AbstractBean<KetQuaDanhGia> {
 	@Override
 	public void initItem() {
 		try {
+			employeeServicePublic = new EmployeeServicePublicProxy();
 			empPJobServicePublic = new EmpPJobServicePublicProxy();
 			ketQuaDanhGias = new ArrayList<KetQuaDanhGia>();
 			Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext()
@@ -118,6 +125,8 @@ public class KetQuaDanhGiaBean extends AbstractBean<KetQuaDanhGia> {
 
 	}
 
+	EmployeeServicePublic employeeServicePublic;
+	
 	public void luuketqua() {
 		try {
 			boolean checkdanhgia = true;
@@ -132,6 +141,24 @@ public class KetQuaDanhGiaBean extends AbstractBean<KetQuaDanhGia> {
 			if (checkdanhgia) {
 				boolean status = ketQuaDanhGiaService.saveOrUpdate(ketQuaDanhGias);
 				if (status) {
+					//Thai
+					//handle send mail
+					trong.lixco.com.account.servicepublics.Member member = getAccount().getMember();
+					String managerCode = member.getDepartment().getCodeMem();
+					EmployeeDTO manager = employeeServicePublic.findByCode(managerCode);
+					//Create list mail destination
+					List<String> listMailDestination = new ArrayList<>();
+					//add mail manager
+//					listMailDestination.add(manager.getEmail());
+					//test mail employee temp // k co du lieu
+					if(member.getEmail().isEmpty()) {
+						listMailDestination.add("thai-dinhquang@lixco.com");
+					}
+					//process send mail
+					if(!listMailDestination.isEmpty()) {
+						Mail.processSendMailAfterSuccessEvaluate(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestination);
+					}
+					//End Thai
 					redirect();
 				} else {
 					errorDialog("Xảy ra lỗi khi lưu");

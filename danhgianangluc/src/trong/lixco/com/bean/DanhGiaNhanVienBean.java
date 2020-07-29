@@ -306,6 +306,10 @@ public class DanhGiaNhanVienBean extends AbstractBean<KetQuaDanhGia> {
 					boolean status = ketQuaDanhGiaService.update(kqs);
 					if (status) {
 						// taichitiet();
+						
+						//handle send mail to Hoi dong
+						
+						// End handle
 						noticeDialog("Đã lưu thông tin đánh giá.");
 					} else {
 						errorDialog("Xảy ra lỗi khi lưu");

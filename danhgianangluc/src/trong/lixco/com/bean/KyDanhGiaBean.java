@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -42,11 +43,14 @@ import trong.lixco.com.servicepublic.EmployeeServicePublicProxy;
 import trong.lixco.com.servicepublic.PositionJobDTO;
 import trong.lixco.com.servicepublic.PositionJobServicePublic;
 import trong.lixco.com.servicepublic.PositionJobServicePublicProxy;
+import trong.lixco.com.thai.mail.CONFIG_MAIL;
+import trong.lixco.com.thai.mail.Mail;
 import trong.lixco.com.util.DepartmentUtil;
 import trong.lixco.com.util.Notify;
 import trong.lixco.util.CheckInOut;
 
 import java.lang.reflect.Type;
+import java.rmi.RemoteException;
 
 @Named
 @ViewScoped
@@ -97,7 +101,7 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 		gson = new Gson();
 		employeeDTOs = new ArrayList<EmployeeDTO>();
 		nhanVienKyDanhGias = new HashSet<NhanVienKyDanhGia>();
-		positionJobDTOs=new ArrayList<PositionJobDTO>();
+		positionJobDTOs = new ArrayList<PositionJobDTO>();
 		try {
 			Department[] deps = departmentServicePublic.getAllDepartSubByParent("10001");
 			for (int i = 0; i < deps.length; i++) {
@@ -154,7 +158,7 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 		// ArrayList<String>(Arrays.asList(kyDanhGia.getNhanviendanhgia().split(",")));
 		Type listType = new TypeToken<List<NhanVienKyDanhGia>>() {
 		}.getType();
-		List<NhanVienKyDanhGia> nvs=gson.fromJson(this.kyDanhGia.getNhanviendanhgia(), listType);
+		List<NhanVienKyDanhGia> nvs = gson.fromJson(this.kyDanhGia.getNhanviendanhgia(), listType);
 		nhanVienKyDanhGias = new HashSet<NhanVienKyDanhGia>(nvs);
 		// for (int i = 0; i < codeEmps.size(); i++) {
 		// for (int j = 0; j < employeeDTOs.size(); j++) {
@@ -213,7 +217,7 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 		try {
 			if (departmentchon != null) {
 				positionJobDTOs.clear();
-				PositionJobDTO[]poss = positionJobServicePublic.findDep(departmentchon.getCode());
+				PositionJobDTO[] poss = positionJobServicePublic.findDep(departmentchon.getCode());
 				for (int i = 0; i < poss.length; i++) {
 					positionJobDTOs.add(poss[i]);
 				}
@@ -221,7 +225,7 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
-		
+
 	}
 
 	PositionJobDTO positionJobDTO;
@@ -230,13 +234,13 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 		try {
 			this.nhanVienKyDanhGia = nv;
 			positionJobDTOs.clear();
-			PositionJobDTO[]poss = positionJobServicePublic.findDep(nv.getMaphongban());
+			PositionJobDTO[] poss = positionJobServicePublic.findDep(nv.getMaphongban());
 			for (int i = 0; i < poss.length; i++) {
 				positionJobDTOs.add(poss[i]);
 			}
 		} catch (Exception e) {
 		}
-		
+
 	}
 
 	public void chonchucdanh() {
@@ -308,7 +312,8 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<EmployeeDTO> completeEmployee(final String containedStr) throws NamingException, ClassNotFoundException {
+	public List<EmployeeDTO> completeEmployee(final String containedStr)
+			throws NamingException, ClassNotFoundException {
 		List<EmployeeDTO> linkedList = new LinkedList<EmployeeDTO>();
 		String searchText = converViToEn(containedStr.toLowerCase());
 		for (int i = 0; i < employeeDTOs.size(); i++) {
@@ -325,6 +330,39 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 		String result = pattern.matcher(temp).replaceAll("");
 		return pattern.matcher(result).replaceAll("").replaceAll("Đ", "D").replaceAll("đ", "d");
 	}
+
+	// Thai
+	public void sendMail() throws RemoteException {
+		List<NhanVienKyDanhGia> listEmployee = this.getNhanVienKyDanhGias();
+		List<String> listMailDestinations = new ArrayList<>();
+		// Create list mail by search employee
+		for (int i = 0; i < listEmployee.size(); i++) {
+			if (listEmployee.get(i).isSelected()) {
+				listEmployee.get(i).setSelected(false);
+				EmployeeDTO temp = employeeServicePublic.findByCode(listEmployee.get(i).getManhanvien());
+				if (temp.getName().equals("Đinh Quang Thái")) {
+					temp.setEmail("thai-dinhquang@lixco.com");
+				}
+				if (temp.getEmail() != null && !temp.getEmail().isEmpty()) {
+					listMailDestinations.add(temp.getEmail());
+				}
+				//Add mail manager to list destination
+				trong.lixco.com.account.servicepublics.Member member = getAccount().getMember();
+				String managerCode = member.getDepartment().getCodeMem();
+				EmployeeDTO manager = employeeServicePublic.findByCode(managerCode);
+//				listMailDestinations.add(manager.getEmail());
+			}
+		}
+
+		if (!listMailDestinations.isEmpty()) {
+			Mail.processSendMailAfterAddEmployee(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestinations);
+			noticeDialog("Thành công");
+		} else {
+			noticeDialog("Nhân viên chưa được cài đặt Mail");
+		}
+
+	}
+	// End thai
 
 	public List<KyDanhGia> getKyDanhGias() {
 		return kyDanhGias;

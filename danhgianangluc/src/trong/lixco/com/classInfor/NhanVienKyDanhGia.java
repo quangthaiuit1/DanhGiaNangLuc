@@ -10,7 +10,17 @@ public class NhanVienKyDanhGia {
 	private String tenphongban;
 	private String machucdanh;
 	private String tenchucdanh;
-
+	
+	//thai
+	private boolean isSelected = false;
+	
+	public boolean isSelected() {
+		return isSelected;
+	}
+	public void setSelected(boolean isSelected) {
+		this.isSelected = isSelected;
+	}
+	//end thai
 	public String getManhanvien() {
 		return manhanvien;
 	}
