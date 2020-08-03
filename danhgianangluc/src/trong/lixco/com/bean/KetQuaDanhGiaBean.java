@@ -147,16 +147,31 @@ public class KetQuaDanhGiaBean extends AbstractBean<KetQuaDanhGia> {
 					String managerCode = member.getDepartment().getCodeMem();
 					EmployeeDTO manager = employeeServicePublic.findByCode(managerCode);
 					//Create list mail destination
-					List<String> listMailDestination = new ArrayList<>();
+					List<String> listMailDestinations = new ArrayList<>();
+					String tenChucDanh = tenchucdanh;
+					String tenNhanVien = member.getName();
+					
 					//add mail manager
 //					listMailDestination.add(manager.getEmail());
 					//test mail employee temp // k co du lieu
 					if(member.getEmail().isEmpty()) {
-						listMailDestination.add("thai-dinhquang@lixco.com");
+						listMailDestinations.add("thai-dinhquang@lixco.com");
 					}
 					//process send mail
-					if(!listMailDestination.isEmpty()) {
-						Mail.processSendMailAfterSuccessEvaluate(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestination);
+					if(!listMailDestinations.isEmpty()) {
+						//danh gia nang luc tuyen dung
+						if(kyDanhGia.getLoaiKyDanhGia().getId() == 3) {
+							Mail.processSendMailAfterSuccessEvaluate(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestinations, this.kyDanhGia, tenNhanVien, tenChucDanh);
+						}
+						//danh gia nang luc toan cong ty
+						if(kyDanhGia.getLoaiKyDanhGia().getId() == 1) {
+							Mail.processSendMailManagerCompany(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestinations, this.kyDanhGia, tenNhanVien, tenChucDanh);
+						}
+						//danh gia nang luc quy hoach can bo
+						if(kyDanhGia.getLoaiKyDanhGia().getId() == 2) {
+							Mail.processSendMailQuyHoachCanBoQuanLy(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestinations, this.kyDanhGia, tenNhanVien, tenChucDanh);
+						}
+						
 					}
 					//End Thai
 					redirect();

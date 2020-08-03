@@ -26,9 +26,13 @@ import org.omnifaces.cdi.ViewScoped;
 
 import com.google.gson.Gson;
 
+import trong.lixco.com.account.servicepublics.Account;
 import trong.lixco.com.account.servicepublics.Department;
 import trong.lixco.com.account.servicepublics.DepartmentServicePublic;
 import trong.lixco.com.account.servicepublics.DepartmentServicePublicProxy;
+import trong.lixco.com.account.servicepublics.Member;
+import trong.lixco.com.account.servicepublics.MemberServicePublic;
+import trong.lixco.com.account.servicepublics.MemberServicePublicProxy;
 import trong.lixco.com.classInfor.NhanVienKyDanhGia;
 import trong.lixco.com.ejb.service.KyDanhGiaService;
 import trong.lixco.com.ejb.service.LoaiKyDanhGiaService;
@@ -72,6 +76,7 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 	private Set<NhanVienKyDanhGia> nhanVienKyDanhGias;
 
 	EmployeeServicePublic employeeServicePublic;
+	MemberServicePublic MEMBER_SERVICE_PUBLIC;
 	DepartmentServicePublic departmentServicePublic;
 	PositionJobServicePublic positionJobServicePublic;
 	EmpPJobServicePublic empPJobServicePublic;
@@ -102,6 +107,7 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 		employeeDTOs = new ArrayList<EmployeeDTO>();
 		nhanVienKyDanhGias = new HashSet<NhanVienKyDanhGia>();
 		positionJobDTOs = new ArrayList<PositionJobDTO>();
+		MEMBER_SERVICE_PUBLIC = new MemberServicePublicProxy();
 		try {
 			Department[] deps = departmentServicePublic.getAllDepartSubByParent("10001");
 			for (int i = 0; i < deps.length; i++) {
@@ -333,13 +339,26 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 
 	// Thai
 	public void sendMail() throws RemoteException {
+		trong.lixco.com.account.servicepublics.Member member = getAccount().getMember();
 		List<NhanVienKyDanhGia> listEmployee = this.getNhanVienKyDanhGias();
 		List<String> listMailDestinations = new ArrayList<>();
+		
+		//Vi tri cong viec
+		String tenChucDanh = "";
+		String tenNhanVien = "";
+		Account accountEmployee = new Account();
 		// Create list mail by search employee
 		for (int i = 0; i < listEmployee.size(); i++) {
 			if (listEmployee.get(i).isSelected()) {
 				listEmployee.get(i).setSelected(false);
 				EmployeeDTO temp = employeeServicePublic.findByCode(listEmployee.get(i).getManhanvien());
+				//Get account
+				Member memberTemp = MEMBER_SERVICE_PUBLIC.findByCode(temp.getCode());
+				accountEmployee = accountServicePublic.findMember(memberTemp);
+				
+				//ten nhan vien
+				tenNhanVien = temp.getName();
+				tenChucDanh = listEmployee.get(i).getTenchucdanh();
 				if (temp.getName().equals("Đinh Quang Thái")) {
 					temp.setEmail("thai-dinhquang@lixco.com");
 				}
@@ -347,16 +366,31 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 					listMailDestinations.add(temp.getEmail());
 				}
 				//Add mail manager to list destination
-				trong.lixco.com.account.servicepublics.Member member = getAccount().getMember();
+//				trong.lixco.com.account.servicepublics.Member member = getAccount().getMember();
 				String managerCode = member.getDepartment().getCodeMem();
 				EmployeeDTO manager = employeeServicePublic.findByCode(managerCode);
 //				listMailDestinations.add(manager.getEmail());
 			}
 		}
-
-		if (!listMailDestinations.isEmpty()) {
-			Mail.processSendMailAfterAddEmployee(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestinations);
-			noticeDialog("Thành công");
+	
+		if (!listMailDestinations.isEmpty() && accountEmployee.getUserName() != null) {
+			//danh gia nang luc tuyen dung
+			if(this.kyDanhGia.getLoaiKyDanhGia().getId() == 3) {
+				Mail.processSendMailAfterAddEmployee(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestinations, this.kyDanhGia, tenNhanVien, tenChucDanh, accountEmployee);
+				noticeDialog("Thành công");
+			}
+			//Danh gia nang luc toang cong ty
+			if(this.kyDanhGia.getLoaiKyDanhGia().getId() == 1) {
+				Mail.processSendMailPersonalCompany(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestinations, this.kyDanhGia, tenNhanVien, tenChucDanh);
+				noticeDialog("Thành công");
+			}
+			//danh gia quy hoach can bo
+			if(this.kyDanhGia.getLoaiKyDanhGia().getId() == 2) {
+				Mail.processSendMailQuyHoachCanBoNhanVien(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestinations, this.kyDanhGia, tenNhanVien, tenChucDanh);
+				noticeDialog("Thành công");
+			}
+			
+			
 		} else {
 			noticeDialog("Nhân viên chưa được cài đặt Mail");
 		}

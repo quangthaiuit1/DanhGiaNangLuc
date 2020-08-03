@@ -335,7 +335,14 @@ public class BaoCaoBean extends AbstractBean {
 		}
 
 		XSSFWorkbook workbook = new XSSFWorkbook();
-		XSSFSheet sheet = workbook.createSheet("Báo cáo năng lực cần đào tạo");
+		XSSFSheet sheet = null;
+		if(loaiBaoCao.equals("DT")){
+			sheet = workbook.createSheet("Báo cáo năng lực cần đào tạo");
+		}
+		if(loaiBaoCao.equals("TD")){
+			sheet = workbook.createSheet("Báo cáo năng lực cần tuyên dương");
+		}
+		
 
 		int rownum = 0;
 		Cell cell;
