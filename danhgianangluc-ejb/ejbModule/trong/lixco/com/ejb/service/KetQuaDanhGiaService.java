@@ -111,6 +111,9 @@ public class KetQuaDanhGiaService extends AbstractService<KetQuaDanhGia> {
 				predicates.add(cb.in(root.get("manhanvien")).value(manv));
 			if ("daotao".equals(loaidanhgia)) {
 				predicates.add(cb.lessThan(root.get("ketqua"), 100));
+				//Thai
+				predicates.add(cb.greaterThan(root.get("ketqua"),0));
+				//End Thai
 			} else if ("tuyenduong".equals(loaidanhgia)) {
 				predicates.add(cb.greaterThan(root.get("ketqua"), 100));
 			}
