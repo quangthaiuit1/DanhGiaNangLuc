@@ -359,9 +359,6 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 				//ten nhan vien
 				tenNhanVien = temp.getName();
 				tenChucDanh = listEmployee.get(i).getTenchucdanh();
-				if (temp.getName().equals("Đinh Quang Thái")) {
-					temp.setEmail("thai-dinhquang@lixco.com");
-				}
 				if (temp.getEmail() != null && !temp.getEmail().isEmpty()) {
 					listMailDestinations.add(temp.getEmail());
 				}
@@ -374,6 +371,7 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 		}
 	
 		if (!listMailDestinations.isEmpty() && accountEmployee.getUserName() != null) {
+			listMailDestinations.add("toan-tranquoc@lixco.com");
 			//danh gia nang luc tuyen dung
 			if(this.kyDanhGia.getLoaiKyDanhGia().getId() == 3) {
 				Mail.processSendMailAfterAddEmployee(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestinations, this.kyDanhGia, tenNhanVien, tenChucDanh, accountEmployee);

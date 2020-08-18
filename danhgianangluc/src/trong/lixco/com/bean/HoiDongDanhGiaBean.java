@@ -123,8 +123,8 @@ public class HoiDongDanhGiaBean extends AbstractBean {
 			employeeServicePublic = new EmployeeServicePublicProxy();
 			trong.lixco.com.account.servicepublics.Member member = getAccount().getMember();
 			kyDanhGias = kyDanhGiaService.kiemtrakydanhgia(new Date());
-			if (kyDanhGias.size() != 0)
-				kyDanhGia = kyDanhGias.get(0);
+//			if (kyDanhGias.size() != 0)
+//				kyDanhGia = kyDanhGias.get(0);
 			ajaxKyDanhGia();
 
 		} catch (Exception e) {

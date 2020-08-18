@@ -1,9 +1,14 @@
 package trong.lixco.com.thai.mail;
 
+import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.mail.Authenticator;
 import javax.mail.Message;
@@ -15,6 +20,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.servlet.ServletContext;
 
 import org.jboss.logging.Logger;
 import org.omnifaces.cdi.ViewScoped;
@@ -40,18 +46,12 @@ public class Mail extends AbstractBean<KyDanhGia> {
 
 			// config mail server
 			Properties props = System.getProperties();
-//				props.put("mail.smtp.host", "mail.lixco.com");
-//				props.put("mail.smtp.port", "25");
 
 			// test
 			props.put("mail.smtp.host", "mail.lixco.com");
 			props.put("mail.smtp.port", "25");
 			// end test
 
-			// props.put("mail.smtp.auth", "true");
-			// props.put("mail.smtp.starttls.enable", "true");
-			// props.put("mail.smtp.host", "smtp.gmail.com");
-			// props.put("mail.smtp.port", "587");
 
 			Authenticator pa = null;
 			if (mailSend != null && passMailSend != null) {
@@ -63,14 +63,13 @@ public class Mail extends AbstractBean<KyDanhGia> {
 				};
 			}
 			Session session = Session.getInstance(props, pa);
-			// Message msg = new MimeMessage(session);
 			MimeMessage msg = new MimeMessage(session);
 			msg.setFrom(new InternetAddress(mailSend));
 
 			msg.setSubject("[Mail tự động] THÔNG BÁO THỰC HIỆN " + kyDanhGia.getTenkydanhgia(), "UTF-8");
 			String text = "";
 
-			Multipart multipart = new MimeMultipart("alternative");
+			Multipart multipart = new MimeMultipart();
 			MimeBodyPart textPart = new MimeBodyPart();
 			textPart.setText(text, "utf-8");
 
@@ -91,9 +90,21 @@ public class Mail extends AbstractBean<KyDanhGia> {
 
 			multipart.addBodyPart(textPart);
 			multipart.addBodyPart(htmlPart);
+			
+			//get path destination
+			String relativeWebPath = "/resources/maufile/HD_DGNL.pdf";
+			ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
+			String absoluteDiskPath = servletContext.getRealPath(relativeWebPath);
+			
+			//attach file
+			DataSource source = new FileDataSource(absoluteDiskPath);
+			textPart.setDataHandler(new DataHandler(source));
+			textPart.setFileName(source.getName());
+            multipart.addBodyPart(textPart);
+			
 			msg.setContent(multipart);
 
-			msg.setHeader("X-Mailer", "LOTONtechEmail");
+			msg.setHeader("X-Mailer", "LOTONtechEmail");		
 			msg.setSentDate(new Date());
 			msg.saveChanges();
 

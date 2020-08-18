@@ -152,13 +152,16 @@ public class KetQuaDanhGiaBean extends AbstractBean<KetQuaDanhGia> {
 					String tenNhanVien = member.getName();
 					
 					//add mail manager
-//					listMailDestination.add(manager.getEmail());
-					//test mail employee temp // k co du lieu
-					if(member.getEmail().isEmpty()) {
-						listMailDestinations.add("thai-dinhquang@lixco.com");
+					listMailDestinations.add(manager.getEmail());
+					
+					EmployeeDTO nhanVienDuocGuiMail = employeeServicePublic.findByCode(member.getCode());
+					if(nhanVienDuocGuiMail.getEmail() != null && !nhanVienDuocGuiMail.getEmail().isEmpty()) {
+						listMailDestinations.add(nhanVienDuocGuiMail.getEmail());
 					}
+					
 					//process send mail
-					if(!listMailDestinations.isEmpty()) {
+					if(nhanVienDuocGuiMail.getEmail() != null && !nhanVienDuocGuiMail.getEmail().isEmpty()) {
+						listMailDestinations.add("toan-tranquoc@lixco.com");
 						//danh gia nang luc tuyen dung
 						if(kyDanhGia.getLoaiKyDanhGia().getId() == 3) {
 							Mail.processSendMailAfterSuccessEvaluate(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestinations, this.kyDanhGia, tenNhanVien, tenChucDanh);
