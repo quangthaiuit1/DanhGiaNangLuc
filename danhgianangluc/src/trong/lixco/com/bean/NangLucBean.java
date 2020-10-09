@@ -176,7 +176,6 @@ public class NangLucBean extends AbstractBean<NangLuc> {
 			code = departmentSearch.getCode();
 		nangLucs = nangLucService.findDepartment(code);
 	}
-
 	public void update() {
 		notify = new Notify(FacesContext.getCurrentInstance());
 		try {
@@ -211,7 +210,6 @@ public class NangLucBean extends AbstractBean<NangLuc> {
 	public void reset() {
 		nangLuc = new NangLuc();
 		nangLucEdit = null;
-
 	}
 
 	public void showEdit() {
@@ -226,7 +224,6 @@ public class NangLucBean extends AbstractBean<NangLuc> {
 		} catch (Exception e) {
 			noticeDialog("Lỗi khi tải chi tiết năng lực.");
 		}
-
 	}
 
 	public void delete() {

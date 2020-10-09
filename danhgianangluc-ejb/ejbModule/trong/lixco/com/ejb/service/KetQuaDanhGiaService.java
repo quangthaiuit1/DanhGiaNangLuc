@@ -15,7 +15,6 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -111,9 +110,6 @@ public class KetQuaDanhGiaService extends AbstractService<KetQuaDanhGia> {
 				predicates.add(cb.in(root.get("manhanvien")).value(manv));
 			if ("daotao".equals(loaidanhgia)) {
 				predicates.add(cb.lessThan(root.get("ketqua"), 100));
-				//Thai
-				predicates.add(cb.greaterThan(root.get("ketqua"),0));
-				//End Thai
 			} else if ("tuyenduong".equals(loaidanhgia)) {
 				predicates.add(cb.greaterThan(root.get("ketqua"), 100));
 			}
@@ -245,73 +241,5 @@ public class KetQuaDanhGiaService extends AbstractService<KetQuaDanhGia> {
 			return false;
 		}
 	}
-	
-	//Thai
-	public List<KetQuaDanhGia> findByResultLessThan(int result,KyDanhGia kyDanhGia){
-		try {
-			CriteriaBuilder cb = em.getCriteriaBuilder();
-			CriteriaQuery<KetQuaDanhGia> cq = cb.createQuery(KetQuaDanhGia.class);
-			Root<KetQuaDanhGia> root = cq.from(KetQuaDanhGia.class);
-			List<Predicate> queries = new ArrayList<>();
-			if(result != 0) {
-				Predicate resultQuery = cb.lessThan(root.get("ketqua"),result);
-				queries.add(resultQuery);
-			}
-			if(result != 0) {
-				Predicate resultQueryGreater = cb.greaterThan(root.get("ketqua"),0);
-				queries.add(resultQueryGreater);
-			}
-			if(kyDanhGia != null) {
-				Predicate resultQuery = cb.equal(root.get("KyDanhGia"),kyDanhGia);
-				queries.add(resultQuery);
-			}
-			
-			Predicate data[] = new Predicate[queries.size()];
-			for (int i = 0; i < queries.size(); i++) {
-				data[i] = queries.get(i);
-			}
-			Predicate finalPredicate = cb.and(data);
-			cq.where(finalPredicate);
-			TypedQuery<KetQuaDanhGia> query = em.createQuery(cq);
-			List<KetQuaDanhGia> results = query.getResultList();
-			return results;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ArrayList<KetQuaDanhGia>();
-		}
-			
-	}
-	
-	public List<KetQuaDanhGia> findByResultGreaterThan(int result,KyDanhGia kyDanhGia){
-		try {
-			CriteriaBuilder cb = em.getCriteriaBuilder();
-			CriteriaQuery<KetQuaDanhGia> cq = cb.createQuery(KetQuaDanhGia.class);
-			Root<KetQuaDanhGia> root = cq.from(KetQuaDanhGia.class);
-			List<Predicate> queries = new ArrayList<>();
-			if(result != 0) {
-				Predicate resultQuery = cb.greaterThan(root.get("ketqua"),result);
-				queries.add(resultQuery);
-			}
-			if(kyDanhGia != null) {
-				Predicate resultQuery = cb.equal(root.get("KyDanhGia"),kyDanhGia);
-				queries.add(resultQuery);
-			}
-			
-			Predicate data[] = new Predicate[queries.size()];
-			for (int i = 0; i < queries.size(); i++) {
-				data[i] = queries.get(i);
-			}
-			Predicate finalPredicate = cb.and(data);
-			cq.where(finalPredicate);
-			TypedQuery<KetQuaDanhGia> query = em.createQuery(cq);
-			List<KetQuaDanhGia> results = query.getResultList();
-			return results;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ArrayList<KetQuaDanhGia>();
-		}
-			
-	}
-	//End Thai
 
 }

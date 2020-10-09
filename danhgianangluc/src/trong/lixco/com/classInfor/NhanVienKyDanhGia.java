@@ -10,17 +10,18 @@ public class NhanVienKyDanhGia {
 	private String tenphongban;
 	private String machucdanh;
 	private String tenchucdanh;
-	
-	//thai
+	// thai
 	private boolean isSelected = false;
-	
+
 	public boolean isSelected() {
 		return isSelected;
 	}
+
 	public void setSelected(boolean isSelected) {
 		this.isSelected = isSelected;
 	}
-	//end thai
+	// end thai
+
 	public String getManhanvien() {
 		return manhanvien;
 	}
@@ -91,11 +92,12 @@ public class NhanVienKyDanhGia {
 		} catch (Exception e) {
 			return false;
 		}
-		
+
 	}
+
 	@Override
-    public int hashCode() {
-        return Objects.hash(manhanvien);
-    }
+	public int hashCode() {
+		return Objects.hash(manhanvien);
+	}
 
 }

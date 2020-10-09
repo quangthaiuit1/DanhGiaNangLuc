@@ -1,6 +1,6 @@
 package trong.lixco.com.thai.mail;
 
-import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -10,6 +10,7 @@ import javax.activation.DataSource;
 import javax.activation.FileDataSource;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
+import javax.mail.Address;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.Multipart;
@@ -38,12 +39,9 @@ public class Mail extends AbstractBean<KyDanhGia> {
 //DANH GIA NANG LUC TUYEN DUNG
 	// send 1
 	public static boolean processSendMailAfterAddEmployee(String mailSend, String passMailSend,
-			List<String> mailDestinations, KyDanhGia kyDanhGia, String tenNhanVien, String tenChucDanh,
-			Account account) {
-//			notify = new Notify(FacesContext.getCurrentInstance());
-
+			String[] mailDestinationsCC, String mailDestinationTo, KyDanhGia kyDanhGia, String tenNhanVien,
+			String tenChucDanh, Account account) {
 		try {
-
 			// config mail server
 			Properties props = System.getProperties();
 
@@ -51,7 +49,6 @@ public class Mail extends AbstractBean<KyDanhGia> {
 			props.put("mail.smtp.host", "mail.lixco.com");
 			props.put("mail.smtp.port", "25");
 			// end test
-
 
 			Authenticator pa = null;
 			if (mailSend != null && passMailSend != null) {
@@ -90,27 +87,31 @@ public class Mail extends AbstractBean<KyDanhGia> {
 
 			multipart.addBodyPart(textPart);
 			multipart.addBodyPart(htmlPart);
-			
-			//get path destination
+
+			// get path destination
 			String relativeWebPath = "/resources/maufile/HD_DGNL.pdf";
-			ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
+			ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext()
+					.getContext();
 			String absoluteDiskPath = servletContext.getRealPath(relativeWebPath);
-			
-			//attach file
+
+			// attach file
 			DataSource source = new FileDataSource(absoluteDiskPath);
 			textPart.setDataHandler(new DataHandler(source));
 			textPart.setFileName(source.getName());
-            multipart.addBodyPart(textPart);
-			
+			multipart.addBodyPart(textPart);
+
 			msg.setContent(multipart);
 
-			msg.setHeader("X-Mailer", "LOTONtechEmail");		
+			msg.setHeader("X-Mailer", "LOTONtechEmail");
 			msg.setSentDate(new Date());
 			msg.saveChanges();
 
-			for (int i = 0; i < mailDestinations.size(); i++) {
-				msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinations.get(i), false));
+			msg.addRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinationTo, false));
+			for (int i = 0; i < mailDestinationsCC.length; i++) { // changed from a while loop
+				msg.addRecipient(Message.RecipientType.CC, new InternetAddress(mailDestinationsCC[i]));
 			}
+
+			// end test
 			Transport.send(msg);
 
 			return true;
@@ -124,7 +125,8 @@ public class Mail extends AbstractBean<KyDanhGia> {
 //DANH GIA NANG LUC TUYEN DUNG
 	// send mail 2 quan ly
 	public static boolean processSendMailAfterSuccessEvaluate(String mailSend, String passMailSend,
-			List<String> mailDestinations, KyDanhGia kyDanhGia, String tenNhanVien, String tenChucDanh) {
+			String[] mailDestinationsCC, String mailDestinationTo, KyDanhGia kyDanhGia, String tenNhanVien,
+			String tenChucDanh) {
 
 		try {
 			// config mail server
@@ -174,8 +176,10 @@ public class Mail extends AbstractBean<KyDanhGia> {
 			msg.setHeader("X-Mailer", "LOTONtechEmail");
 			msg.setSentDate(new Date());
 			msg.saveChanges();
-			for (int i = 0; i < mailDestinations.size(); i++) {
-				msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinations.get(i), false));
+
+			msg.addRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinationTo, false));
+			for (int i = 0; i < mailDestinationsCC.length; i++) { // changed from a while loop
+				msg.addRecipient(Message.RecipientType.CC, new InternetAddress(mailDestinationsCC[i]));
 			}
 			Transport.send(msg);
 
@@ -190,8 +194,8 @@ public class Mail extends AbstractBean<KyDanhGia> {
 //DANH GIA NANG LUC TUYEN DUNG
 	// gui hoi dong
 	public static boolean processSendMailAfterManagerChecked(String mailSend, String passMailSend,
-			List<String> mailDestinations, KyDanhGia kyDanhGia, String tenNhanVien, String tenChucDanh,
-			String departmentName) {
+			String[] mailDestinationsCC, String mailDestinationTo, KyDanhGia kyDanhGia, String tenNhanVien,
+			String tenChucDanh, String departmentName) {
 
 		try {
 
@@ -240,10 +244,12 @@ public class Mail extends AbstractBean<KyDanhGia> {
 			msg.setSentDate(new Date());
 			msg.saveChanges();
 
-			for (int i = 0; i < mailDestinations.size(); i++) {
-				msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinations.get(i), false));
-				Transport.send(msg);
+			msg.addRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinationTo, false));
+			for (int i = 0; i < mailDestinationsCC.length; i++) { // changed from a while loop
+				msg.addRecipient(Message.RecipientType.CC, new InternetAddress(mailDestinationsCC[i]));
 			}
+			Transport.send(msg);
+
 			return true;
 
 		} catch (Exception e) {
@@ -255,7 +261,8 @@ public class Mail extends AbstractBean<KyDanhGia> {
 	// DANH GIA NANG LUC TOAN CONG TY
 	// gui ca nhan
 	public static boolean processSendMailPersonalCompany(String mailSend, String passMailSend,
-			List<String> mailDestinations, KyDanhGia kyDanhGia, String tenNhanVien, String tenChucDanh) {
+			String[] mailDestinationsCC, String mailDestinationTo, KyDanhGia kyDanhGia, String tenNhanVien,
+			String tenChucDanh) {
 
 		try {
 
@@ -304,8 +311,10 @@ public class Mail extends AbstractBean<KyDanhGia> {
 			msg.setHeader("X-Mailer", "LOTONtechEmail");
 			msg.setSentDate(new Date());
 			msg.saveChanges();
-			for (int i = 0; i < mailDestinations.size(); i++) {
-				msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinations.get(i), false));
+
+			msg.addRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinationTo, false));
+			for (int i = 0; i < mailDestinationsCC.length; i++) { // changed from a while loop
+				msg.addRecipient(Message.RecipientType.CC, new InternetAddress(mailDestinationsCC[i]));
 			}
 			Transport.send(msg);
 
@@ -320,7 +329,8 @@ public class Mail extends AbstractBean<KyDanhGia> {
 //DANH GIA NANG LUC TOAN CONG TY
 	// quan ly
 	public static boolean processSendMailManagerCompany(String mailSend, String passMailSend,
-			List<String> mailDestinations, KyDanhGia kyDanhGia, String tenNhanVien, String tenChucDanh) {
+			String[] mailDestinationsCC, String mailDestinationTo, KyDanhGia kyDanhGia, String tenNhanVien,
+			String tenChucDanh) {
 
 		try {
 
@@ -353,8 +363,8 @@ public class Mail extends AbstractBean<KyDanhGia> {
 			String htmlText = "<p style='font-size: 20px;'>Kính gửi anh/chị Trưởng đơn vị</p>"
 					+ "<p style='font-size: 20px;'>Phòng Nhân sự xin thông báo: Bạn "
 					+ "<span style='font-weight: bold'>" + tenNhanVien + "</span>"
-					+ " đã hoàn thành tự đánh giá năng lực cho kỳ " + kyDanhGia.getTenkydanhgia()
-					+ " ở vị trí " + "<span style='font-weight: bold'>" + tenChucDanh + "</span>"
+					+ " đã hoàn thành tự đánh giá năng lực cho kỳ " + kyDanhGia.getTenkydanhgia() + " ở vị trí "
+					+ "<span style='font-weight: bold'>" + tenChucDanh + "</span>"
 					+ ". Vì vậy, anh/chị vui lòng truy cập vào phần mềm để thực hiện đánh giá năng lực của bạn "
 					+ "<span style='font-weight: bold'>" + tenNhanVien + "</span>" + " ở cấp quản lý.</p>"
 					+ "<p style='font-size: 20px;'>Nhằm đảm bảo thực hiện đúng theo tiến độ đánh giá năng lực anh/chị vui lòng hoàn thành việc đánh giá trong vòng <span style='font-weight: bold'> 2 ngày </span> kể từ ngày nhận được email này.</p>"
@@ -370,8 +380,10 @@ public class Mail extends AbstractBean<KyDanhGia> {
 			msg.setHeader("X-Mailer", "LOTONtechEmail");
 			msg.setSentDate(new Date());
 			msg.saveChanges();
-			for (int i = 0; i < mailDestinations.size(); i++) {
-				msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinations.get(i), false));
+
+			msg.addRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinationTo, false));
+			for (int i = 0; i < mailDestinationsCC.length; i++) { // changed from a while loop
+				msg.addRecipient(Message.RecipientType.CC, new InternetAddress(mailDestinationsCC[i]));
 			}
 			Transport.send(msg);
 
@@ -386,8 +398,8 @@ public class Mail extends AbstractBean<KyDanhGia> {
 //DANH GIA NANG LUC TOAN CONG TY
 	// gui hoi dong
 	public static boolean processSendMailHoiDongCompany(String mailSend, String passMailSend,
-			List<String> mailDestinations, KyDanhGia kyDanhGia, String tenNhanVien, String tenChucDanh,
-			String departmentName) {
+			String[] mailDestinationsCC, String mailDestinationTo, KyDanhGia kyDanhGia, String tenNhanVien,
+			String tenChucDanh, String departmentName) {
 
 		try {
 
@@ -438,10 +450,12 @@ public class Mail extends AbstractBean<KyDanhGia> {
 			msg.setSentDate(new Date());
 			msg.saveChanges();
 
-			for (int i = 0; i < mailDestinations.size(); i++) {
-				msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinations.get(i), false));
-				Transport.send(msg);
+			msg.addRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinationTo, false));
+			for (int i = 0; i < mailDestinationsCC.length; i++) { // changed from a while loop
+				msg.addRecipient(Message.RecipientType.CC, new InternetAddress(mailDestinationsCC[i]));
 			}
+			Transport.send(msg);
+
 			return true;
 
 		} catch (Exception e) {
@@ -453,7 +467,8 @@ public class Mail extends AbstractBean<KyDanhGia> {
 //DANH GIA QUY HOACH CAN BO
 	// 1. nhan vien
 	public static boolean processSendMailQuyHoachCanBoNhanVien(String mailSend, String passMailSend,
-			List<String> mailDestinations, KyDanhGia kyDanhGia, String tenNhanVien, String tenChucDanh) {
+			String[] mailDestinationsCC, String mailDestinationTo, KyDanhGia kyDanhGia, String tenNhanVien,
+			String tenChucDanh) {
 
 		try {
 
@@ -502,8 +517,10 @@ public class Mail extends AbstractBean<KyDanhGia> {
 			msg.setHeader("X-Mailer", "LOTONtechEmail");
 			msg.setSentDate(new Date());
 			msg.saveChanges();
-			for (int i = 0; i < mailDestinations.size(); i++) {
-				msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinations.get(i), false));
+
+			msg.addRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinationTo, false));
+			for (int i = 0; i < mailDestinationsCC.length; i++) { // changed from a while loop
+				msg.addRecipient(Message.RecipientType.CC, new InternetAddress(mailDestinationsCC[i]));
 			}
 			Transport.send(msg);
 
@@ -514,10 +531,12 @@ public class Mail extends AbstractBean<KyDanhGia> {
 			return false;
 		}
 	}
+
 //DANH GIA QUY HOACH CAN BO
 	// 2. Quan ly
 	public static boolean processSendMailQuyHoachCanBoQuanLy(String mailSend, String passMailSend,
-			List<String> mailDestinations, KyDanhGia kyDanhGia, String tenNhanVien, String tenChucDanh) {
+			String[] mailDestinationsCC, String mailDestinationTo, KyDanhGia kyDanhGia, String tenNhanVien,
+			String tenChucDanh) {
 
 		try {
 
@@ -550,8 +569,8 @@ public class Mail extends AbstractBean<KyDanhGia> {
 			String htmlText = "<p style='font-size: 20px;'>Kính gửi anh/chị Trưởng đơn vị</p>"
 					+ "<p style='font-size: 20px;'>Phòng Nhân sự xin thông báo: anh/chị "
 					+ "<span style='font-weight: bold'>" + tenNhanVien + "</span>"
-					+ " đã hoàn thành tự đánh giá năng lực cho kỳ " + kyDanhGia.getTenkydanhgia()
-					+ " ở vị trí " + "<span style='font-weight: bold'>" + tenChucDanh + "</span>"
+					+ " đã hoàn thành tự đánh giá năng lực cho kỳ " + kyDanhGia.getTenkydanhgia() + " ở vị trí "
+					+ "<span style='font-weight: bold'>" + tenChucDanh + "</span>"
 					+ ". Vì vậy, anh/chị vui lòng truy cập vào phần mềm để thực hiện đánh giá năng lực của anh/chị "
 					+ "<span style='font-weight: bold'>" + tenNhanVien + "</span>" + " ở cấp quản lý.</p>"
 					+ "<p style='font-size: 20px;'>Nhằm đảm bảo thực hiện đúng theo tiến độ đánh giá năng lực anh/chị vui lòng hoàn thành việc đánh giá trong vòng <span style='font-weight: bold'> 2 ngày </span> kể từ ngày nhận được email này.</p>"
@@ -567,8 +586,10 @@ public class Mail extends AbstractBean<KyDanhGia> {
 			msg.setHeader("X-Mailer", "LOTONtechEmail");
 			msg.setSentDate(new Date());
 			msg.saveChanges();
-			for (int i = 0; i < mailDestinations.size(); i++) {
-				msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinations.get(i), false));
+
+			msg.addRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinationTo, false));
+			for (int i = 0; i < mailDestinationsCC.length; i++) { // changed from a while loop
+				msg.addRecipient(Message.RecipientType.CC, new InternetAddress(mailDestinationsCC[i]));
 			}
 			Transport.send(msg);
 
@@ -581,10 +602,10 @@ public class Mail extends AbstractBean<KyDanhGia> {
 	}
 
 //DANH GIA QUY HOACH CAN BO
-	// 3. Hoi dong	
+	// 3. Hoi dong
 	public static boolean processSendMailQuyHoachCanBoHoiDong(String mailSend, String passMailSend,
-			List<String> mailDestinations, KyDanhGia kyDanhGia, String tenNhanVien, String tenChucDanh,
-			String departmentName) {
+			String[] mailDestinationsCC, String mailDestinationTo, KyDanhGia kyDanhGia, String tenNhanVien,
+			String tenChucDanh, String departmentName) {
 
 		try {
 
@@ -635,10 +656,12 @@ public class Mail extends AbstractBean<KyDanhGia> {
 			msg.setSentDate(new Date());
 			msg.saveChanges();
 
-			for (int i = 0; i < mailDestinations.size(); i++) {
-				msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinations.get(i), false));
-				Transport.send(msg);
+			msg.addRecipients(Message.RecipientType.TO, InternetAddress.parse(mailDestinationTo, false));
+			for (int i = 0; i < mailDestinationsCC.length; i++) { // changed from a while loop
+				msg.addRecipient(Message.RecipientType.CC, new InternetAddress(mailDestinationsCC[i]));
 			}
+			Transport.send(msg);
+
 			return true;
 
 		} catch (Exception e) {
@@ -646,6 +669,7 @@ public class Mail extends AbstractBean<KyDanhGia> {
 			return false;
 		}
 	}
+
 	@Override
 	protected void initItem() {
 		// TODO Auto-generated method stub

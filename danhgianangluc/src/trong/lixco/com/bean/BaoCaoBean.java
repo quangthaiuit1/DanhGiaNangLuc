@@ -1,9 +1,6 @@
 package trong.lixco.com.bean;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,29 +13,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFFont;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.docx4j.org.xhtmlrenderer.pdf.ITextRenderer;
 import org.jboss.logging.Logger;
 import org.omnifaces.cdi.ViewScoped;
-import org.primefaces.PrimeFaces;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import jxl.CellType;
 import trong.lixco.com.account.servicepublics.Department;
 import trong.lixco.com.account.servicepublics.DepartmentServicePublic;
 import trong.lixco.com.account.servicepublics.DepartmentServicePublicProxy;
 import trong.lixco.com.classInfor.BaoCaoTongHopTable;
 import trong.lixco.com.classInfor.BaoCaoTuyChonTable;
 import trong.lixco.com.classInfor.DanhGiaNhanVien;
-import trong.lixco.com.classInfor.NhanVienKyDanhGia;
 import trong.lixco.com.ejb.service.ChiTietNangLucService;
 import trong.lixco.com.ejb.service.KetQuaDanhGiaService;
 import trong.lixco.com.ejb.service.KhungNangLucService;
@@ -47,7 +31,6 @@ import trong.lixco.com.ejb.service.LoaiKyDanhGiaService;
 import trong.lixco.com.ejb.service.NangLucService;
 import trong.lixco.com.jpa.dto.BaoCaoTongHopDTO;
 import trong.lixco.com.jpa.dto.BaoCaoTuyChonDTO;
-import trong.lixco.com.jpa.entity.KetQuaDanhGia;
 import trong.lixco.com.jpa.entity.KhungNangLuc;
 import trong.lixco.com.jpa.entity.KyDanhGia;
 import trong.lixco.com.jpa.entity.LoaiKyDanhGia;
@@ -90,15 +73,6 @@ public class BaoCaoBean extends AbstractBean {
 	private int soluongnangluc;
 	private String loaidanhgia;
 	private String ketqua;
-
-	// Thai
-	private String loaiBaoCao = "";
-	private LoaiKyDanhGia loaiKyDanhGiaNangLuc;
-	private KyDanhGia kyDanhGiaNangLuc;
-	private List<KyDanhGia> kyDanhGiaNangLucs;
-	private Department departmentNangLuc;
-	private List<NangLuc> nangLucThais;
-	// End Thai
 
 	private PositionJobDTO positionJobDTO;
 	private List<PositionJobDTO> positionJobDTOs;
@@ -148,8 +122,6 @@ public class BaoCaoBean extends AbstractBean {
 			ajaxLoaiKyDanhGiath();
 			loaiKyDanhGiatc = loaiKyDanhGias.get(0);
 			ajaxLoaiKyDanhGiatc();
-			loaiKyDanhGiaNangLuc = loaiKyDanhGias.get(0);
-			ajaxLoaiKyDanhGiaNangLuc();
 		}
 		try {
 			Department[] deps = departmentServicePublic.getAllDepartSubByParent("10001");
@@ -185,29 +157,6 @@ public class BaoCaoBean extends AbstractBean {
 		}
 	}
 
-	// Thai
-	public void ajaxLoaiKyDanhGiaNangLuc() {
-		if (loaiKyDanhGiaNangLuc != null) {
-			try {
-				kyDanhGiaNangLucs = kyDanhGiaService.findRange(loaiKyDanhGiaNangLuc);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	public void ajaxDepNangLuc() {
-		String codeDep = "";
-		if (departmentNangLuc != null)
-			codeDep = departmentNangLuc.getCode();
-		try {
-			nangLucThais = nangLucService.findDepartment(codeDep);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	// End Thai
-
 	public void ajaxDeptc() {
 		String codeDep = "";
 		if (departmenttc != null)
@@ -241,6 +190,8 @@ public class BaoCaoBean extends AbstractBean {
 			notify.warning("Lá»—i khi lÆ°u: " + e.getLocalizedMessage());
 		}
 	}
+	
+
 
 	public void baocaotuychon() {
 		notify = new Notify(FacesContext.getCurrentInstance());
@@ -254,7 +205,7 @@ public class BaoCaoBean extends AbstractBean {
 					for (int j = 0; j < departments.length; j++) {
 						codeDeps.add(departments[j].getCode());
 					}
-
+				
 				String[] codearr = codeDeps.stream().toArray(String[]::new);
 				EmployeeDTO[] employeeDTOs = employeeServicePublic.findByDep(codearr);
 				if (employeeDTOs != null)
@@ -287,7 +238,6 @@ public class BaoCaoBean extends AbstractBean {
 			notify.warning("Lỗi khi tải: " + e.getLocalizedMessage());
 		}
 	}
-
 	public void baocaotuychonxls() {
 		try {
 			executeScript("target='_blank';monitorDownload( showStatus , hideStatus)");
@@ -303,161 +253,6 @@ public class BaoCaoBean extends AbstractBean {
 			e.printStackTrace();
 		}
 	}
-
-	// Thai
-
-	private static XSSFCellStyle createStyleForTitle(XSSFWorkbook workbook) {
-		XSSFFont font = workbook.createFont();
-		font.setBold(true);
-		XSSFCellStyle style = workbook.createCellStyle();
-		style.setFont(font);
-		return style;
-	}
-
-	public void baoCaoNangLucCanDaoTao() throws IOException {
-//		PrimeFaces.current().executeScript("start().click()");
-		if (loaiBaoCao.equals("")) {
-			loaiBaoCao = "DT";
-		}
-		// handle data
-		// neu khong chon ky danh gia nao
-		if (kyDanhGiaNangLuc == null) {
-			kyDanhGiaNangLuc = kyDanhGiaNangLucs.get(0);
-		}
-		// Nang luc can dao tao
-		List<KetQuaDanhGia> listKetQuaDanhGia = new ArrayList<>();
-		if (loaiBaoCao.equals("DT")) {
-			listKetQuaDanhGia = ketQuaDanhGiaService.findByResultLessThan(100, kyDanhGiaNangLuc);
-		}
-		// Tuyen duong
-		if (loaiBaoCao.equals("TD")) {
-			listKetQuaDanhGia = ketQuaDanhGiaService.findByResultGreaterThan(100, kyDanhGiaNangLuc);
-		}
-
-		XSSFWorkbook workbook = new XSSFWorkbook();
-		XSSFSheet sheet = null;
-		if(loaiBaoCao.equals("DT")){
-			sheet = workbook.createSheet("Báo cáo năng lực cần đào tạo");
-		}
-		if(loaiBaoCao.equals("TD")){
-			sheet = workbook.createSheet("Báo cáo năng lực cần tuyên dương");
-		}
-		
-
-		int rownum = 0;
-		Cell cell;
-		Row row;
-		XSSFCellStyle style = createStyleForTitle(workbook);
-		style.setAlignment(CellStyle.ALIGN_CENTER);
-
-		CellStyle styleContent = workbook.createCellStyle();
-		row = sheet.createRow(rownum);
-
-		// EmpNo
-		cell = row.createCell(0);
-		cell.setCellValue("Mã NV mới");
-
-		cell = row.createCell(5);
-		cell.setCellValue("Nhóm năng lực");
-		cell.setCellStyle(style);
-		// xep loai
-		cell = row.createCell(6);
-		cell.setCellValue("Mã năng lực");
-		cell.setCellStyle(style);
-		// xep loai
-		cell = row.createCell(7);
-		cell.setCellValue("Tên năng lực");
-		cell.setCellStyle(style);
-		// xep loai
-		cell = row.createCell(8);
-		cell.setCellValue("Kết quả");
-		cell.setCellStyle(style);
-		// xep loai// EmpName
-		cell = row.createCell(1);
-		cell.setCellValue("Mã NV cũ");
-		cell.setCellStyle(style);
-		// Salary
-		cell = row.createCell(2);
-		cell.setCellValue("Phòng");
-		cell.setCellStyle(style);
-		// Grade
-		cell = row.createCell(3);
-		cell.setCellValue("Họ và tên");
-		cell.setCellStyle(style);
-		// Bonus
-		cell = row.createCell(4);
-		cell.setCellValue("Chức danh");
-		cell.setCellStyle(style);
-		// xep loai
-		cell = row.createCell(9);
-		cell.setCellValue("Nhận xét");
-		cell.setCellStyle(style);
-
-//		 Data
-		for (KetQuaDanhGia kq : listKetQuaDanhGia) {
-			Gson gson = new Gson();
-			EmployeeDTO empTemp = employeeServicePublic.findByCode(kq.getManhanvien());
-			if (empTemp != null && kq.getChiTietNangLuc() != null) {
-				rownum++;
-				row = sheet.createRow(rownum);
-				// EmpNo (A)
-				cell = row.createCell(0);
-				cell.setCellValue(kq.getManhanvien());
-				// EmpName (B)
-				cell = row.createCell(1);
-				cell.setCellValue(empTemp.getCodeOld());
-				// phong
-				cell = row.createCell(2);
-				cell.setCellValue(empTemp.getNameDepart());
-				// ten nhan vien
-				cell = row.createCell(3);
-				cell.setCellValue(empTemp.getName());
-
-				// Chuc danh
-				String tenchucdanh = "";
-				Type listType = new TypeToken<List<NhanVienKyDanhGia>>() {
-				}.getType();
-				List<NhanVienKyDanhGia> nvs = gson.fromJson(this.kyDanhGiaNangLuc.getNhanviendanhgia(), listType);
-				for (int i = 0; i < nvs.size(); i++) {
-					if (nvs.get(i).getManhanvien().equals(kq.getManhanvien())) {
-						tenchucdanh = nvs.get(i).getTenchucdanh();
-						break;
-					}
-				}
-
-				cell = row.createCell(4);
-				cell.setCellValue(tenchucdanh);
-
-				// Nhom nang luc
-				cell = row.createCell(5);
-				cell.setCellValue(kq.getChiTietNangLuc().getNangLuc().getNhomNangLuc().getTen());
-				cell = row.createCell(6);
-				cell.setCellValue(kq.getManl());
-				cell = row.createCell(7);
-				cell.setCellValue(kq.getTennl());
-				cell = row.createCell(8);
-				cell.setCellValue(kq.getKetqua());
-				cell = row.createCell(9);
-				if (loaiBaoCao.equals("DT")) {
-					cell.setCellValue("Không đạt");
-				}
-				if (loaiBaoCao.equals("TD")) {
-					cell.setCellValue("Xuất sắc");
-				}
-			}
-		}
-
-		String filename = "baocaonangluc.xlsx";
-		FacesContext facesContext = FacesContext.getCurrentInstance();
-		ExternalContext externalContext = facesContext.getExternalContext();
-		externalContext.setResponseContentType("application/vnd.ms-excel");
-		externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-		workbook.write(externalContext.getResponseOutputStream());
-		//cancel progress
-		facesContext.responseComplete();
-	}
-
-	// End Thai
 	public void chitiet(BaoCaoTuyChonDTO baoCaoTuyChonDTO) {
 		try {
 			FacesContext facesContext = FacesContext.getCurrentInstance();
@@ -467,23 +262,17 @@ public class BaoCaoBean extends AbstractBean {
 					.getRequest();
 			ITextRenderer renderer = new ITextRenderer();
 			String url = "http://" + ht.getServerName() + ":" + ht.getServerPort()
-					+ "/danhgianangluc/pages/chitietdanhgia.htm?kydanhgia_id=" + baoCaoTuyChonDTO.getKyDanhGia().getId()
-					+ "&nv=" + baoCaoTuyChonDTO.getManv();
-
-			FacesContext.getCurrentInstance().getExternalContext().redirect(url);
+					+ "/danhgianangluc/pages/chitietdanhgia.htm?kydanhgia_id="
+							+ baoCaoTuyChonDTO.getKyDanhGia().getId() + "&nv=" + baoCaoTuyChonDTO.getManv();
+			FacesContext
+					.getCurrentInstance()
+					.getExternalContext()
+					.redirect(url);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
-
-	public List<KyDanhGia> getKyDanhGiaNangLucs() {
-		return kyDanhGiaNangLucs;
-	}
-
-	public void setKyDanhGiaNangLucs(List<KyDanhGia> kyDanhGiaNangLucs) {
-		this.kyDanhGiaNangLucs = kyDanhGiaNangLucs;
-	}
+	
 
 	public List<KhungNangLuc> getKhungNangLucs() {
 		return khungNangLucs;
@@ -659,46 +448,6 @@ public class BaoCaoBean extends AbstractBean {
 
 	public void setNangLucs(List<NangLuc> nangLucs) {
 		this.nangLucs = nangLucs;
-	}
-
-	public String getLoaiBaoCao() {
-		return loaiBaoCao;
-	}
-
-	public void setLoaiBaoCao(String loaiBaoCao) {
-		this.loaiBaoCao = loaiBaoCao;
-	}
-
-	public LoaiKyDanhGia getLoaiKyDanhGiaNangLuc() {
-		return loaiKyDanhGiaNangLuc;
-	}
-
-	public void setLoaiKyDanhGiaNangLuc(LoaiKyDanhGia loaiKyDanhGiaNangLuc) {
-		this.loaiKyDanhGiaNangLuc = loaiKyDanhGiaNangLuc;
-	}
-
-	public KyDanhGia getKyDanhGiaNangLuc() {
-		return kyDanhGiaNangLuc;
-	}
-
-	public void setKyDanhGiaNangLuc(KyDanhGia kyDanhGiaNangLuc) {
-		this.kyDanhGiaNangLuc = kyDanhGiaNangLuc;
-	}
-
-	public Department getDepartmentNangLuc() {
-		return departmentNangLuc;
-	}
-
-	public void setDepartmentNangLuc(Department departmentNangLuc) {
-		this.departmentNangLuc = departmentNangLuc;
-	}
-
-	public List<NangLuc> getNangLucThais() {
-		return nangLucThais;
-	}
-
-	public void setNangLucThais(List<NangLuc> nangLucThais) {
-		this.nangLucThais = nangLucThais;
 	}
 
 }

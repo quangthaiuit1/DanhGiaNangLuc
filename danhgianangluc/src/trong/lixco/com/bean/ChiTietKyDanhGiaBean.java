@@ -112,7 +112,7 @@ public class ChiTietKyDanhGiaBean extends AbstractBean<KyDanhGia> {
 				List<NhomNangLuc> nhomnls = nhomNangLucService.findAll();
 				chiTietKyDanhGiaTables.clear();
 				diemNhomNangLucs.clear();
-				nangLucs = nangLucService.findDepartment(department.getCode());
+				nangLucs = nangLucService.findDepartmentNotDisable(department.getCode());
 				PositionJobDTO[] poss = positionJobServicePublic.findDep(department.getCode());
 				trongsonhoms = new String[nhomnls.size()][poss.length];
 				for (int i = 0; i < nangLucs.size(); i++) {

@@ -11,6 +11,7 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -56,4 +57,32 @@ public class CaiDatHoiDongService extends AbstractService<CaiDatHoiDong> {
 			return null;
 		}
 	}
+
+	// thai
+	public List<CaiDatHoiDong> find(String departmentCode) {
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<CaiDatHoiDong> cq = cb.createQuery(CaiDatHoiDong.class);
+		Root<CaiDatHoiDong> root = cq.from(CaiDatHoiDong.class);
+		List<Predicate> queries = new ArrayList<>();
+		if (departmentCode != null) {
+			departmentCode = "%" + departmentCode + "%";
+			Predicate employeeCodeQuery = cb.like(root.get("phongban"), departmentCode);
+			queries.add(employeeCodeQuery);
+		}
+		Predicate data[] = new Predicate[queries.size()];
+		for (int i = 0; i < queries.size(); i++) {
+			data[i] = queries.get(i);
+		}
+		Predicate finalPredicate = cb.and(data);
+		cq.where(finalPredicate);
+		TypedQuery<CaiDatHoiDong> query = em.createQuery(cq);
+		List<CaiDatHoiDong> abc = query.getResultList();
+		if (!abc.isEmpty()) {
+			return abc;
+		} else {
+			return new ArrayList<>();
+		}
+
+	}
+	// end thai
 }

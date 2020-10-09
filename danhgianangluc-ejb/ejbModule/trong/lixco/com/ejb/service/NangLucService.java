@@ -112,6 +112,26 @@ public class NangLucService extends AbstractService<NangLuc> {
 		}
 	}
 
+	public List<NangLuc> findDepartmentNotDisable(String code) {
+		try {
+			CriteriaBuilder cb = em.getCriteriaBuilder();
+			CriteriaQuery<NangLuc> cq = cb.createQuery(NangLuc.class);
+			List<Predicate> predicates = new LinkedList<Predicate>();
+			Root<NangLuc> root = cq.from(NangLuc.class);
+			if (code == null || "".equals(code)) {
+				predicates.add(cb.isNull(root.get("codeDep")));
+			} else {
+				predicates.add(cb.equal(root.get("codeDep"), code));
+			}
+			predicates.add(cb.equal(root.get("nhomNangLuc").get("nangluccongty"), true));
+			cq.select(root).where(cb.or(predicates.toArray(new Predicate[0])), cb.equal(root.get("disable"), false))
+					.orderBy(cb.asc(root.get("nhomNangLuc").get("ma")), cb.asc(root.get("ma")));
+			return em.createQuery(cq).getResultList();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 	public void luunangluctuexcel(List<NangLuc> nangLucs) {
 		for (int i = 0; i < nangLucs.size(); i++) {
 			try {
@@ -163,6 +183,27 @@ public class NangLucService extends AbstractService<NangLuc> {
 							}
 						}
 					}
+//					// Cap nhat neu da co nang luc
+//					else {
+//						String manhom = nl.getMa().substring(0, 1);
+//						if ("D".equals(manhom)) {
+//							NhomNangLuc nhomnl = nhomNangLucService.findByCode(manhom);
+//							if (nhomnl != null) {
+//								nlDataBase.setDinhnghia(nl.getDinhnghia());
+//								List<ChiTietNangLuc> ctnlolds = nlDataBase.getChiTietNangLucs();
+//								for (int j = 0; j < ctnlolds.size(); j++) {
+//									ChiTietNangLuc ct = ctnlolds.get(j);
+//									em.remove(ct);
+//								}
+//								List<ChiTietNangLuc> ctnls = nl.getChiTietNangLucs();
+//								for (int j = 0; j < ctnls.size(); j++) {
+//									ChiTietNangLuc ct = ctnls.get(j);
+//									ct.setNangLuc(nlDataBase);
+//									em.persist(ct);
+//								}
+//							}
+//						}
+//					}
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

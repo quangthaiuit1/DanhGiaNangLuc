@@ -11,13 +11,13 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.lang.StringUtils;
 import org.jboss.logging.Logger;
 import org.omnifaces.cdi.ViewScoped;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import trong.lixco.com.account.servicepublics.Department;
 import trong.lixco.com.classInfor.NhanVienKyDanhGia;
 import trong.lixco.com.ejb.service.ChiTietKyDanhGiaService;
 import trong.lixco.com.ejb.service.ChiTietNangLucService;
@@ -36,6 +36,7 @@ import trong.lixco.com.servicepublic.EmployeeServicePublic;
 import trong.lixco.com.servicepublic.EmployeeServicePublicProxy;
 import trong.lixco.com.thai.mail.CONFIG_MAIL;
 import trong.lixco.com.thai.mail.Mail;
+import trong.lixco.com.thai.mail.MailDestinationEntity;
 import trong.lixco.com.util.Notify;
 
 @Named
@@ -94,7 +95,7 @@ public class KetQuaDanhGiaBean extends AbstractBean<KetQuaDanhGia> {
 				String codeDep = "";
 				for (int i = 0; i < nvs.size(); i++) {
 					if (nvs.get(i).getManhanvien().equals(member.getCode())) {
-						tenchucdanh=nvs.get(i).getTenchucdanh();
+						tenchucdanh = nvs.get(i).getTenchucdanh();
 						codePjob = nvs.get(i).getMachucdanh();
 						codeDep = nvs.get(i).getMaphongban();
 						break;
@@ -104,8 +105,8 @@ public class KetQuaDanhGiaBean extends AbstractBean<KetQuaDanhGia> {
 						codePjob);
 				if (!"".equals(codePjob) && !"".equals(codeDep)) {
 					for (int i = 0; i < chitiets.size(); i++) {
-						List<ChiTietNangLuc> ctnls = chiTietNangLucService.findNangLuc(chitiets.get(i).getNangLuc()
-								.getMa(), codeDep);
+						List<ChiTietNangLuc> ctnls = chiTietNangLucService
+								.findNangLuc(chitiets.get(i).getNangLuc().getMa(), codeDep);
 						Collections.shuffle(ctnls);
 						KetQuaDanhGia kq = new KetQuaDanhGia();
 						kq.setKyDanhGia(kyDanhGia);
@@ -126,7 +127,7 @@ public class KetQuaDanhGiaBean extends AbstractBean<KetQuaDanhGia> {
 	}
 
 	EmployeeServicePublic employeeServicePublic;
-	
+
 	public void luuketqua() {
 		try {
 			boolean checkdanhgia = true;
@@ -141,42 +142,52 @@ public class KetQuaDanhGiaBean extends AbstractBean<KetQuaDanhGia> {
 			if (checkdanhgia) {
 				boolean status = ketQuaDanhGiaService.saveOrUpdate(ketQuaDanhGias);
 				if (status) {
-					//Thai
-					//handle send mail
+					// Thai
+					// handle send mail
 					trong.lixco.com.account.servicepublics.Member member = getAccount().getMember();
 					String managerCode = member.getDepartment().getCodeMem();
 					EmployeeDTO manager = employeeServicePublic.findByCode(managerCode);
-					//Create list mail destination
-					List<String> listMailDestinations = new ArrayList<>();
+					// tao mail destination
+					MailDestinationEntity mailDestination = new MailDestinationEntity();
+
 					String tenChucDanh = tenchucdanh;
 					String tenNhanVien = member.getName();
-					
-					//add mail manager
-					listMailDestinations.add(manager.getEmail());
-					
-					EmployeeDTO nhanVienDuocGuiMail = employeeServicePublic.findByCode(member.getCode());
-					if(nhanVienDuocGuiMail.getEmail() != null && !nhanVienDuocGuiMail.getEmail().isEmpty()) {
-						listMailDestinations.add(nhanVienDuocGuiMail.getEmail());
+
+					// add mail manager
+					mailDestination.setDestinationTo(manager.getEmail());
+
+					// mailDestination.setDestinationTo("thai-dinhquang@lixco.com");
+
+					// process send mail
+					if (StringUtils.isNotEmpty(mailDestination.getDestinationTo())) {
+						List<String> mailCC = new ArrayList<>();
+						mailCC.add("toan-tranquoc@lixco.com");
+						mailCC.add("thi-nguyenhoang@lixco.com");
+						// add mail cc to mail destination
+
+						String[] mailCCArray = mailCC.toArray(new String[mailCC.size()]);
+
+						// danh gia nang luc tuyen dung
+						if (kyDanhGia.getLoaiKyDanhGia().getId() == 3) {
+							Mail.processSendMailAfterSuccessEvaluate(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend,
+									mailCCArray, mailDestination.getDestinationTo(), this.kyDanhGia, tenNhanVien,
+									tenChucDanh);
+						}
+						// danh gia nang luc toan cong ty
+						if (kyDanhGia.getLoaiKyDanhGia().getId() == 1) {
+							Mail.processSendMailManagerCompany(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend,
+									mailCCArray, mailDestination.getDestinationTo(), this.kyDanhGia, tenNhanVien,
+									tenChucDanh);
+						}
+						// danh gia nang luc quy hoach can bo
+						if (kyDanhGia.getLoaiKyDanhGia().getId() == 2) {
+							Mail.processSendMailQuyHoachCanBoQuanLy(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend,
+									mailCCArray, mailDestination.getDestinationTo(), this.kyDanhGia, tenNhanVien,
+									tenChucDanh);
+						}
+
 					}
-					
-					//process send mail
-					if(nhanVienDuocGuiMail.getEmail() != null && !nhanVienDuocGuiMail.getEmail().isEmpty()) {
-						listMailDestinations.add("toan-tranquoc@lixco.com");
-						//danh gia nang luc tuyen dung
-						if(kyDanhGia.getLoaiKyDanhGia().getId() == 3) {
-							Mail.processSendMailAfterSuccessEvaluate(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestinations, this.kyDanhGia, tenNhanVien, tenChucDanh);
-						}
-						//danh gia nang luc toan cong ty
-						if(kyDanhGia.getLoaiKyDanhGia().getId() == 1) {
-							Mail.processSendMailManagerCompany(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestinations, this.kyDanhGia, tenNhanVien, tenChucDanh);
-						}
-						//danh gia nang luc quy hoach can bo
-						if(kyDanhGia.getLoaiKyDanhGia().getId() == 2) {
-							Mail.processSendMailQuyHoachCanBoQuanLy(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestinations, this.kyDanhGia, tenNhanVien, tenChucDanh);
-						}
-						
-					}
-					//End Thai
+					// End Thai
 					redirect();
 				} else {
 					errorDialog("Xảy ra lỗi khi lưu");

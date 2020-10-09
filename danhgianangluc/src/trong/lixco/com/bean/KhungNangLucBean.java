@@ -92,11 +92,20 @@ public class KhungNangLucBean extends AbstractBean<KhungNangLuc> {
 				List<NangLuc> nangLucs = nangLucService.findDepartment(department.getCode());
 				for (int i = 0; i < nangLucs.size(); i++) {
 					boolean status = false;
+					int indexremove=-1;
 					for (int j = 0; j < khungNangLucs.size(); j++) {
 						if (nangLucs.get(i).equals(khungNangLucs.get(j).getNangLuc())) {
-							status = true;
-							break;
+							if (nangLucs.get(i).isDisable()) {
+								indexremove = j;
+								break;
+							} else {
+								status = true;
+								break;
+							}
 						}
+					}
+					if(indexremove!=-1){
+						khungNangLucs.remove(indexremove);
 					}
 					if (!status) {
 						KhungNangLuc knl = new KhungNangLuc();
@@ -105,7 +114,6 @@ public class KhungNangLucBean extends AbstractBean<KhungNangLuc> {
 						khungNangLucs.add(knl);
 					}
 				}
-
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

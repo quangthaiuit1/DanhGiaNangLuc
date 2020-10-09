@@ -16,12 +16,14 @@ import org.omnifaces.cdi.ViewScoped;
 import trong.lixco.com.classInfor.ChiTietDanhGiaNhanVien;
 import trong.lixco.com.classInfor.NhanVienKyDanhGia;
 import trong.lixco.com.classInfor.NhomNangLucDanhGia;
+import trong.lixco.com.ejb.service.CaiDatHoiDongService;
 import trong.lixco.com.ejb.service.ChiTietKyDanhGiaService;
 import trong.lixco.com.ejb.service.ChiTietNangLucService;
 import trong.lixco.com.ejb.service.KetQuaDanhGiaService;
 import trong.lixco.com.ejb.service.KhungNangLucService;
 import trong.lixco.com.ejb.service.KyDanhGiaService;
 import trong.lixco.com.ejb.service.NangLucService;
+import trong.lixco.com.jpa.entity.CaiDatHoiDong;
 import trong.lixco.com.jpa.entity.ChiTietKyDanhGia;
 import trong.lixco.com.jpa.entity.KetQuaDanhGia;
 import trong.lixco.com.jpa.entity.KhungNangLuc;
@@ -31,6 +33,9 @@ import trong.lixco.com.servicepublic.EmpPJobServicePublicProxy;
 import trong.lixco.com.servicepublic.EmployeeDTO;
 import trong.lixco.com.servicepublic.EmployeeServicePublic;
 import trong.lixco.com.servicepublic.EmployeeServicePublicProxy;
+import trong.lixco.com.thai.mail.CONFIG_MAIL;
+import trong.lixco.com.thai.mail.Mail;
+import trong.lixco.com.thai.mail.MailDestinationEntity;
 import trong.lixco.com.util.Notify;
 
 import com.google.gson.Gson;
@@ -59,6 +64,8 @@ public class DanhGiaNhanVienBean extends AbstractBean<KetQuaDanhGia> {
 	private NangLucService nangLucService;
 	@Inject
 	private ChiTietNangLucService chiTietNangLucService;
+	@Inject
+	private CaiDatHoiDongService CAI_DAT_HOI_DONG_SERVICE;
 	@Inject
 	private Logger logger;
 	@Inject
@@ -139,8 +146,8 @@ public class DanhGiaNhanVienBean extends AbstractBean<KetQuaDanhGia> {
 					ct.setMucdo(knl.getMucdoquantrong());
 					ct.setTieuchuan(knl.getTieuchuan());
 				}
-				KetQuaDanhGia kq = ketQuaDanhGiaService.ketquadanhgianhanvien(kyDanhGia.getId(), manhanvien, chitiets
-						.get(i).getNangLuc().getId());
+				KetQuaDanhGia kq = ketQuaDanhGiaService.ketquadanhgianhanvien(kyDanhGia.getId(), manhanvien,
+						chitiets.get(i).getNangLuc().getId());
 				if (kq != null) {
 					ct.setId(kq.getId());
 					ct.setChiTietNangLucql(kq.getChiTietNangLucql());
@@ -200,15 +207,14 @@ public class DanhGiaNhanVienBean extends AbstractBean<KetQuaDanhGia> {
 		for (int i = 0; i < chiTietDanhGiaNhanViens.size(); i++) {
 			int diemdat = chiTietDanhGiaNhanViens.get(i).getMucdo() * chiTietDanhGiaNhanViens.get(i).getDanhgiahd();
 			chiTietDanhGiaNhanViens.get(i).setDiemdat(diemdat);
-			double ketqua = (double) diemdat
-					/ (double) (chiTietDanhGiaNhanViens.get(i).getMucdo() * chiTietDanhGiaNhanViens.get(i)
-							.getTieuchuan());
+			double ketqua = (double) diemdat / (double) (chiTietDanhGiaNhanViens.get(i).getMucdo()
+					* chiTietDanhGiaNhanViens.get(i).getTieuchuan());
 			// if (ketqua > 1)
 			// ketqua = 1;
 			chiTietDanhGiaNhanViens.get(i).setKetqua((int) (ketqua * 100));
 		}
-		Map<String, List<ChiTietDanhGiaNhanVien>> datagroups1 = chiTietDanhGiaNhanViens.stream().collect(
-				Collectors.groupingBy(p -> p.getNhomNangLucDanhGia().getManhom(), Collectors.toList()));
+		Map<String, List<ChiTietDanhGiaNhanVien>> datagroups1 = chiTietDanhGiaNhanViens.stream()
+				.collect(Collectors.groupingBy(p -> p.getNhomNangLucDanhGia().getManhom(), Collectors.toList()));
 		for (String manhom : datagroups1.keySet()) {
 			List<ChiTietDanhGiaNhanVien> invs = datagroups1.get(manhom);
 			int diemchuan = 0;
@@ -305,11 +311,42 @@ public class DanhGiaNhanVienBean extends AbstractBean<KetQuaDanhGia> {
 				if (checkdanhgia) {
 					boolean status = ketQuaDanhGiaService.update(kqs);
 					if (status) {
-						// taichitiet();
-						
-						//handle send mail to Hoi dong
-						
+						// handle send mail to Hoi dong
+						List<CaiDatHoiDong> caidathoidongs = CAI_DAT_HOI_DONG_SERVICE.find(nhanvien.getCodeDepart());
+						// tao mail destination
+						MailDestinationEntity mailDestination = new MailDestinationEntity();
+						mailDestination.setDestinationTo("thi-nguyenhoang@lixco.com");// chinh
+																						// thuc
+						List<String> mailCC = new ArrayList<>();
+						mailCC.add("toan-tranquoc@lixco.com");
+
+						for (CaiDatHoiDong m : caidathoidongs) {
+							EmployeeDTO employeeTemp = employeeServicePublic.findByCode(m.getManhanvien());
+							mailCC.add(employeeTemp.getEmail());// chinh thuc
+						}
+
+						String[] mailCCArray = mailCC.toArray(new String[mailCC.size()]);
+						// danh gia nang luc tuyen dung
+
+						if (kyDanhGia.getLoaiKyDanhGia().getId() == 3) {
+							Mail.processSendMailAfterManagerChecked(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend,
+									mailCCArray, mailDestination.getDestinationTo(), this.kyDanhGia, nhanvien.getName(),
+									tenchucdanh, nhanvien.getNameDepart());
+						}
+						// danh gia nang luc toan cong ty
+						if (kyDanhGia.getLoaiKyDanhGia().getId() == 1) {
+							Mail.processSendMailHoiDongCompany(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend,
+									mailCCArray, mailDestination.getDestinationTo(), this.kyDanhGia, nhanvien.getName(),
+									tenchucdanh, nhanvien.getNameDepart());
+						}
+						// danh gia nang luc quy hoach can bo
+						if (kyDanhGia.getLoaiKyDanhGia().getId() == 2) {
+							Mail.processSendMailQuyHoachCanBoHoiDong(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend,
+									mailCCArray, mailDestination.getDestinationTo(), this.kyDanhGia, nhanvien.getName(),
+									tenchucdanh, nhanvien.getNameDepart());
+						}
 						// End handle
+						// taichitiet();
 						noticeDialog("Đã lưu thông tin đánh giá.");
 					} else {
 						errorDialog("Xảy ra lỗi khi lưu");
@@ -327,15 +364,15 @@ public class DanhGiaNhanVienBean extends AbstractBean<KetQuaDanhGia> {
 	public void luutam() {
 		try {
 			caidatdiemtong();
-//			boolean checkdanhgia = true;
+			// boolean checkdanhgia = true;
 			List<KetQuaDanhGia> kqs = new ArrayList<KetQuaDanhGia>();
 			if (tongdiem != 0) {
 				warnDialog("Hội đồng đã đánh giá, không cập nhật được.");
 			} else {
 				for (int i = 0; i < chiTietDanhGiaNhanViens.size(); i++) {
 					if (chiTietDanhGiaNhanViens.get(i).getChiTietNangLucql() == null) {
-//						checkdanhgia = false;
-//						break;
+						// checkdanhgia = false;
+						// break;
 					} else {
 						KetQuaDanhGia kq = null;
 						if (chiTietDanhGiaNhanViens.get(i).getId() != 0)

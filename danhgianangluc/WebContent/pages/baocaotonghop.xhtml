@@ -43,38 +43,7 @@
 	text-decoration: underline !important;
 	color: #0e8bee !important;
 }
-
-.animated .ui-progressbar-value {
-	background-image: url("#{resource['images/pbar-ani.gif']}");
-}
 </style>
-		<script type="text/javascript">
-    //<![CDATA[
-function start() {
-     
-    window['progress'] = setInterval(function() {
-var pbClient = PF('pbClient'),
-oldValue = pbClient.getValue(),
-newValue = oldValue + 10;
-         
-pbClient.setValue(pbClient.getValue() + 10);
-     
-if(newValue === 100) {
-    clearInterval(window['progress']);
-}
- 
- 
-    }, 1000);
-}
- 
-function cancel() {
-    clearInterval(window['progress']);
-    PF('pbClient').setValue(0);
-    PF('startButton1').enable();
-}
-    //]]>
-</script>
-
 		<h:form>
 
 		</h:form>
@@ -325,54 +294,5 @@ function cancel() {
 				</p:dataTable>
 			</p:fieldset>
 		</h:form>
-		<!-- Thai -->
-		<h:form id="bcNangLucCanDT">
-			<p:fieldset
-				style="width:95%;    margin: auto; padding:10px 10px; margin-top: 20px">
-				<h3 style="margin: 0px; font-size: 1.5em; color: #4b87f2;">Báo
-					cáo năng lực theo tùy chọn (Mới)</h3>
-				<p:separator style="width:20%;margin:5px" />
-				<p:progressBar id="progressBarClient" widgetVar="pbClient"
-					style="width:815px" />
-				<h:panelGrid columns="6" style="width:100%">
-					<p:selectOneMenu value="#{baoCaoBean.loaiKyDanhGiaNangLuc}"
-						converter="abstractConverter" effect="fade" var="t"
-						style="width:150px;" filter="true" filterMatchMode="custom"
-						filterFunction="customFilter">
-						<p:ajax listener="#{baoCaoBean.ajaxLoaiKyDanhGiaNangLuc()}"
-							process="@this" update="kdgtc" />
-						<f:selectItems value="#{baoCaoBean.loaiKyDanhGias}" var="item"
-							itemLabel="#{item.ten}" itemValue="#{item}" />
-						<p:column>
-							<h:outputText value="#{t.ten}" />
-						</p:column>
-					</p:selectOneMenu>
-					<p:selectOneMenu value="#{baoCaoBean.kyDanhGiaNangLuc}"
-						converter="abstractConverter" effect="fade" var="t" id="kdgtc"
-						style="width:150px;" filter="true" filterMatchMode="custom"
-						filterFunction="customFilter">
-						<p:ajax process="@this" />
-						<f:selectItems value="#{baoCaoBean.kyDanhGiaNangLucs}" var="item"
-							itemLabel="#{item.tenkydanhgia}" itemValue="#{item}" />
-						<p:column>
-							<h:outputText value="#{t.tenkydanhgia}" />
-						</p:column>
-					</p:selectOneMenu>
-					<p:selectOneMenu value="#{baoCaoBean.loaiBaoCao}"
-						style="width:150px;">
-						<p:ajax process="@this" />
-						<f:selectItem itemLabel="Chọn loại báo cáo" itemValue="" />
-						<f:selectItem itemLabel="Năng lực cần đào tạo" itemValue="DT" />
-						<f:selectItem itemLabel="Năng lực cần tuyên dương" itemValue="TD" />
-					</p:selectOneMenu>
-					<p:commandButton value="Xuất excel" immediate="true"
-						style="float:right" ajax="false" id="test"
-						actionListener="#{baoCaoBean.baoCaoNangLucCanDaoTao()}"
-						onclick="start()" widgetVar="startButton1"/>
-
-				</h:panelGrid>
-			</p:fieldset>
-		</h:form>
-		<!-- End Thai -->
 	</ui:define>
 </ui:composition>

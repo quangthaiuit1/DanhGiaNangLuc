@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -49,6 +48,8 @@ import trong.lixco.com.servicepublic.PositionJobServicePublic;
 import trong.lixco.com.servicepublic.PositionJobServicePublicProxy;
 import trong.lixco.com.thai.mail.CONFIG_MAIL;
 import trong.lixco.com.thai.mail.Mail;
+import trong.lixco.com.thai.mail.MailDestinationEntity;
+import trong.lixco.com.thai.mail.Notification;
 import trong.lixco.com.util.DepartmentUtil;
 import trong.lixco.com.util.Notify;
 import trong.lixco.util.CheckInOut;
@@ -76,10 +77,11 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 	private Set<NhanVienKyDanhGia> nhanVienKyDanhGias;
 
 	EmployeeServicePublic employeeServicePublic;
-	MemberServicePublic MEMBER_SERVICE_PUBLIC;
 	DepartmentServicePublic departmentServicePublic;
 	PositionJobServicePublic positionJobServicePublic;
 	EmpPJobServicePublic empPJobServicePublic;
+
+	MemberServicePublic MEMBER_SERVICE_PUBLIC;
 	@Inject
 	private KyDanhGiaService kyDanhGiaService;
 	@Inject
@@ -341,58 +343,84 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 	public void sendMail() throws RemoteException {
 		trong.lixco.com.account.servicepublics.Member member = getAccount().getMember();
 		List<NhanVienKyDanhGia> listEmployee = this.getNhanVienKyDanhGias();
-		List<String> listMailDestinations = new ArrayList<>();
-		
-		//Vi tri cong viec
+		boolean notExistMail = false;
+		boolean notExistAccount = false;
+
+		// Vi tri cong viec
 		String tenChucDanh = "";
 		String tenNhanVien = "";
-		Account accountEmployee = new Account();
 		// Create list mail by search employee
+		// lap toan bo ds -> nhung nguoi duoc gui mail
+		// THAI NEW
 		for (int i = 0; i < listEmployee.size(); i++) {
 			if (listEmployee.get(i).isSelected()) {
-				listEmployee.get(i).setSelected(false);
+
+				// tao mail tam thoi cho tung nhan vien
+				MailDestinationEntity mailDestinationTemp = new MailDestinationEntity();
+
 				EmployeeDTO temp = employeeServicePublic.findByCode(listEmployee.get(i).getManhanvien());
-				//Get account
+				// Get account
 				Member memberTemp = MEMBER_SERVICE_PUBLIC.findByCode(temp.getCode());
-				accountEmployee = accountServicePublic.findMember(memberTemp);
-				
-				//ten nhan vien
+				Account accountByEmployee = accountServicePublic.findMember(memberTemp);
+				if (accountByEmployee == null || accountByEmployee.getUserName() == null) {
+					notExistAccount = true;
+				}
+				if (notExistAccount) {
+					Notification.NOTI_ERROR("Nhân viên " + temp.getName() + "chưa có tài khoản!");
+					return;
+				}
+				if (accountByEmployee != null) {
+					mailDestinationTemp.setAccount(accountByEmployee);
+				}
+
+				// ten nhan vien
 				tenNhanVien = temp.getName();
 				tenChucDanh = listEmployee.get(i).getTenchucdanh();
 				if (temp.getEmail() != null && !temp.getEmail().isEmpty()) {
-					listMailDestinations.add(temp.getEmail());
+					mailDestinationTemp.setDestinationTo(temp.getEmail());
+					// test
+				} else {
+					// khong co mail
+					notExistMail = true;
 				}
-				//Add mail manager to list destination
-//				trong.lixco.com.account.servicepublics.Member member = getAccount().getMember();
-				String managerCode = member.getDepartment().getCodeMem();
-				EmployeeDTO manager = employeeServicePublic.findByCode(managerCode);
-//				listMailDestinations.add(manager.getEmail());
-			}
-		}
-	
-		if (!listMailDestinations.isEmpty() && accountEmployee.getUserName() != null) {
-			listMailDestinations.add("toan-tranquoc@lixco.com");
-			//danh gia nang luc tuyen dung
-			if(this.kyDanhGia.getLoaiKyDanhGia().getId() == 3) {
-				Mail.processSendMailAfterAddEmployee(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestinations, this.kyDanhGia, tenNhanVien, tenChucDanh, accountEmployee);
-				noticeDialog("Thành công");
-			}
-			//Danh gia nang luc toang cong ty
-			if(this.kyDanhGia.getLoaiKyDanhGia().getId() == 1) {
-				Mail.processSendMailPersonalCompany(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestinations, this.kyDanhGia, tenNhanVien, tenChucDanh);
-				noticeDialog("Thành công");
-			}
-			//danh gia quy hoach can bo
-			if(this.kyDanhGia.getLoaiKyDanhGia().getId() == 2) {
-				Mail.processSendMailQuyHoachCanBoNhanVien(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, listMailDestinations, this.kyDanhGia, tenNhanVien, tenChucDanh);
-				noticeDialog("Thành công");
-			}
-			
-			
-		} else {
-			noticeDialog("Nhân viên chưa được cài đặt Mail");
-		}
+				// neu khong co mail
+				if (notExistMail) {
+					Notification.NOTI_ERROR("Nhân viên " + temp.getName() + "chưa có mail!");
+					return;
+				}
+				// Add mail manager to list destination
 
+				String managerCode = memberTemp.getDepartment().getCodeMem();
+
+				EmployeeDTO manager = employeeServicePublic.findByCode(managerCode);
+				List<String> mailCC = new ArrayList<>();
+				// add mail truong don vi
+				mailCC.add(manager.getEmail()); // chinh thuc
+				mailCC.add("toan-tranquoc@lixco.com"); // chinh thuc
+				String[] mailCCArray = mailCC.toArray(new String[mailCC.size()]);
+				// using mailDestinationTemp
+
+				// danh gia nang luc tuyen dung
+				if (this.kyDanhGia.getLoaiKyDanhGia().getId() == 3) {
+					Mail.processSendMailAfterAddEmployee(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, mailCCArray,
+							mailDestinationTemp.getDestinationTo(), this.kyDanhGia, tenNhanVien, tenChucDanh,
+							mailDestinationTemp.getAccount());
+				}
+				// Danh gia nang luc toang cong ty
+				if (this.kyDanhGia.getLoaiKyDanhGia().getId() == 1) {
+					Mail.processSendMailPersonalCompany(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend, mailCCArray,
+							mailDestinationTemp.getDestinationTo(), this.kyDanhGia, tenNhanVien, tenChucDanh);
+				}
+				// danh gia quy hoach can bo
+				if (this.kyDanhGia.getLoaiKyDanhGia().getId() == 2) {
+					Mail.processSendMailQuyHoachCanBoNhanVien(CONFIG_MAIL.mailSend, CONFIG_MAIL.passMailSend,
+							mailCCArray, mailDestinationTemp.getDestinationTo(), this.kyDanhGia, tenNhanVien,
+							tenChucDanh);
+				}
+			}
+			Notification.NOTI_SUCCESS("Thành công");
+		}
+		// END THAI NEW
 	}
 	// End thai
 
