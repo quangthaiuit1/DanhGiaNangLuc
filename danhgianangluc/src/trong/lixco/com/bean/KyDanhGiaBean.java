@@ -354,13 +354,13 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 		// THAI NEW
 		for (int i = 0; i < listEmployee.size(); i++) {
 			if (listEmployee.get(i).isSelected()) {
-
 				// tao mail tam thoi cho tung nhan vien
 				MailDestinationEntity mailDestinationTemp = new MailDestinationEntity();
 
 				EmployeeDTO temp = employeeServicePublic.findByCode(listEmployee.get(i).getManhanvien());
 				// Get account
 				Member memberTemp = MEMBER_SERVICE_PUBLIC.findByCode(temp.getCode());
+
 				Account accountByEmployee = accountServicePublic.findMember(memberTemp);
 				if (accountByEmployee == null || accountByEmployee.getUserName() == null) {
 					notExistAccount = true;
@@ -377,8 +377,10 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 				tenNhanVien = temp.getName();
 				tenChucDanh = listEmployee.get(i).getTenchucdanh();
 				if (temp.getEmail() != null && !temp.getEmail().isEmpty()) {
-					mailDestinationTemp.setDestinationTo(temp.getEmail());
+					mailDestinationTemp.setDestinationTo(temp.getEmail()); // chinh
+																			// thuc
 					// test
+					// mailDestinationTemp.setDestinationTo("thai-dinhquang@lixco.com");
 				} else {
 					// khong co mail
 					notExistMail = true;
@@ -395,8 +397,14 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 				EmployeeDTO manager = employeeServicePublic.findByCode(managerCode);
 				List<String> mailCC = new ArrayList<>();
 				// add mail truong don vi
+				if (manager.getEmail() == null || manager.getEmail().isEmpty()) {
+					Notification.NOTI_ERROR("Không tìm thấy mail quản lý!");
+					return;
+				}
 				mailCC.add(manager.getEmail()); // chinh thuc
 				mailCC.add("toan-tranquoc@lixco.com"); // chinh thuc
+				// mailCC.add("thai1@abc.com");
+				// mailCC.add("thai2@abc.com");
 				String[] mailCCArray = mailCC.toArray(new String[mailCC.size()]);
 				// using mailDestinationTemp
 
@@ -418,8 +426,8 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 							tenChucDanh);
 				}
 			}
-			Notification.NOTI_SUCCESS("Thành công");
 		}
+		Notification.NOTI_SUCCESS("Thành công");
 		// END THAI NEW
 	}
 	// End thai
