@@ -354,7 +354,6 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 		// THAI NEW
 		for (int i = 0; i < listEmployee.size(); i++) {
 			if (listEmployee.get(i).isSelected()) {
-
 				// tao mail tam thoi cho tung nhan vien
 				MailDestinationEntity mailDestinationTemp = new MailDestinationEntity();
 
@@ -397,6 +396,8 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 				// add mail truong don vi
 				mailCC.add(manager.getEmail()); // chinh thuc
 				mailCC.add("toan-tranquoc@lixco.com"); // chinh thuc
+				// mailCC.add("thai1@abc.com");
+				// mailCC.add("thai2@abc.com");
 				String[] mailCCArray = mailCC.toArray(new String[mailCC.size()]);
 				// using mailDestinationTemp
 
@@ -418,8 +419,8 @@ public class KyDanhGiaBean extends AbstractBean<KyDanhGia> {
 							tenChucDanh);
 				}
 			}
-			Notification.NOTI_SUCCESS("Thành công");
 		}
+		Notification.NOTI_SUCCESS("Thành công");
 		// END THAI NEW
 	}
 	// End thai
